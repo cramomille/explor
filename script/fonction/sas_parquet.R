@@ -1,0 +1,81 @@
+#' @title Transformation de fichiers .sas en fichiers .parquet
+#' @description
+#' Cette fonction permet de creer des fichiers .parquet a partir de fichiers .sas7bdat
+#' 
+#' @param sas_files le vecteur avec le chemin vers le ou les fichiers .sas
+#' @param parquet_dir l'endoit ou sera cree le dossier qui contiendra les fichiers .parquet
+#' @param chunk_size le nombre de lignes des fichiers .parquet
+#' 
+#' @return 
+#' La fonction cree un dossier du meme nom que le fichier .sas traite avec a l'interieur
+#' les fichiers .parquet crees (si le fichier .sas traite est compose de 100 lignes 
+#' et que la taille des chunks est de 10, alors il y aura 10 fichiers .parquet)
+#' 
+#' @examples
+#' sas_parquet(sas_files = c("test/parquet/data1.sas7bdat", 
+#'                           "test/parquet/data2.sas7bdat"), 
+#'             parquet_dir = "test/parquet/export/",
+#'             chunk_size = 100000)
+
+sas_parquet <- function(sas_files,
+                        parquet_dir,
+                        chunk_size = 1000000) {
+  
+  for (x in sas_files) {
+    sas_name <- sub("\\.sas7bdat$", "", basename(x))
+    
+    # Creation d'un dossier specifique pour ce fichier .sas
+    output_dir <- file.path(parquet_dir, sas_name)
+    if (!dir.exists(output_dir)) {
+      dir.create(output_dir, recursive = TRUE)
+    }
+    
+    # Definition des parametres des chunks
+    count <- 1
+    row <- 0
+    total_time <- 0
+    
+    # Boucle principale
+    repeat {
+      
+      start_time <- Sys.time() # -----------------------------------------------
+      
+      # Lecture d'un chunk du fichier .sas
+      chunk <- tryCatch(
+        read_sas(x, skip = row, n_max = chunk_size),
+        error = function(e) NULL
+      )
+      
+      if (is.null(chunk) || nrow(chunk) == 0) break
+      
+      # Ecriture du fichier .parquet dans le dossier specifique au fichier .sas traite
+      output <- file.path(output_dir, paste0(sas_name, "_chunk", sprintf("%02d", count), ".parquet"))
+      write_parquet(chunk, output, compression = "snappy")
+      
+      end_time <- Sys.time() # -------------------------------------------------
+      
+      # Calcul du temps de calcul et d'ecriture du chunk
+      chunk_time <- as.numeric(end_time - start_time, units = "secs")
+      total_time <- total_time + chunk_time
+      m <- floor(chunk_time / 60)
+      s <- round(chunk_time %% 60)
+      
+      # Mise a jour de la premiere ligne du prochain chunk et formatage du message
+      row <- row + nrow(chunk)
+      row_text <- formatC(row, format = "d", big.mark = " ")
+      
+      # Message d'avancement du traitement du fichier .sas
+      cat(sprintf("Chunk %02d : total de %10s lignes traitées [time %02d:%02d]\n", 
+                  count, row_text, m, s))
+      
+      # Incrementation du compteur de chunks
+      count <- count + 1
+    }
+    
+    # Message final pour chaque fichier .sas entierement traite
+    total_m <- floor(total_time / 60)
+    total_s <- round(total_time %% 60)
+    cat(sprintf("\nFichier '%s' traité [time %02d:%02d]\n\n", 
+                sas_name, total_m, total_s))
+  }
+}
