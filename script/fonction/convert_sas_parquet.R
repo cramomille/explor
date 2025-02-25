@@ -3,7 +3,7 @@
 #' Cette fonction permet de creer des fichiers .parquet a partir de fichiers .sas7bdat
 #' 
 #' @param sas_files le vecteur avec le chemin vers le ou les fichiers .sas
-#' @param parquet_dir l'endoit ou sera cree le dossier qui contiendra les fichiers .parquet
+#' @param parquet_dir le chemin vers ou sera cree le dossier qui contiendra les fichiers .parquet
 #' @param chunk_size le nombre de lignes des fichiers .parquet
 #' 
 #' @return 
@@ -12,14 +12,14 @@
 #' et que la taille des chunks est de 10, alors il y aura 10 fichiers .parquet)
 #' 
 #' @examples
-#' sas_parquet(sas_files = c("test/parquet/data1.sas7bdat", 
-#'                           "test/parquet/data2.sas7bdat"), 
-#'             parquet_dir = "test/parquet/export/",
-#'             chunk_size = 100000)
+#' convert_sas_parquet(sas_files = c("test/parquet/data1.sas7bdat", 
+#'                                   "test/parquet/data2.sas7bdat"), 
+#'                     parquet_dir = "test/parquet/export/",
+#'                     chunk_size = 100000)
 
-sas_parquet <- function(sas_files,
-                        parquet_dir,
-                        chunk_size = 1000000) {
+convert_sas_parquet <- function(sas_files,
+                                parquet_dir,
+                                chunk_size = 1000000) {
   
   for (x in sas_files) {
     sas_name <- sub("\\.sas7bdat$", "", basename(x))
