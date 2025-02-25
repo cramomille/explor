@@ -17,6 +17,9 @@
 #'                     parquet_dir = "test/parquet/export/",
 #'                     chunk_size = 100000)
 
+library(haven)
+library(arrow)
+
 convert_sas_parquet <- function(sas_files,
                                 parquet_dir,
                                 chunk_size = 1000000) {
@@ -38,7 +41,7 @@ convert_sas_parquet <- function(sas_files,
     # Boucle principale
     repeat {
       
-      start_time <- Sys.time() # -----------------------------------------------
+      start_time <- Sys.time() # _______________________________________________
       
       # Lecture d'un chunk du fichier .sas
       chunk <- tryCatch(
@@ -52,7 +55,7 @@ convert_sas_parquet <- function(sas_files,
       output <- file.path(output_dir, paste0(sas_name, "_chunk", sprintf("%02d", count), ".parquet"))
       write_parquet(chunk, output, compression = "snappy")
       
-      end_time <- Sys.time() # -------------------------------------------------
+      end_time <- Sys.time() # -________________________________________________
       
       # Calcul du temps de calcul et d'ecriture du chunk
       chunk_time <- as.numeric(end_time - start_time, units = "secs")

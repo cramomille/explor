@@ -11,12 +11,6 @@ f <- list.files("script/fonction",
 sapply(f, source)
 
 
-library(haven)
-library(arrow)
-library(duckdb)
-library(dplyr)
-
-
 ################################################################################
 ################################################## CREATION DE FICHIERS .PARQUET
 
