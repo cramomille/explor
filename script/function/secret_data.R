@@ -27,7 +27,7 @@
 #' @param limit la valeur de l'effectif minimum de la secretisation
 #' @param unique le boleen pour definir si l'on considere que l'ensemble des colonnes 
 #' a secretiser forment ou non un tout ('TRUE'  si toutes les colonnes composent un tout
-#  et 'FALSE' si les colonnes ne composent pas un tout)
+#' et 'FALSE' si les colonnes ne composent pas un tout)
 #' 
 #' @return 
 #' La fonction renvoie un data.frame
@@ -59,8 +59,8 @@ secret_data <- function(data,
       }
     }
     
-    # Remplacement des valeurs inferieures a la limit par des valeurs NA
-    values_secret <- ifelse(values < limit, NA, values)
+    # Remplacement des valeurs differentes de 0 et inferieures a la limit par des valeurs NA
+    values_secret <- ifelse(values > 0 & values < limit, NA, values)
     
     # Verification du nombre de valeurs secretisees
     secret_indices <- which(is.na(values_secret))

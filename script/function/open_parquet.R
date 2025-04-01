@@ -1,9 +1,9 @@
-#' @title Ouverture d'un tableau de donnees dans R a partir d'un fichier .parquet
+#' @title Ouverture d'un fichier .parquet dans R
 #' @description
 #' Cette fonction permet de selectionner des colonnes d'interet presentes dans un
 #' fichier .parquet et de les charger dans R
 #' 
-#' @param dir le chemin vers le dossier qui contient les chunk.parquet du fichier
+#' @param dir le chemin vers le dossier qui contient les chunks .parquet du fichier
 #' @param id le vecteur avec le nom de la colonne identifiant que l'on souhaite conserver
 #' @param col le vecteur avec le nom de la colonne d'interet que l'on souhaite conserver
 #' 

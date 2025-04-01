@@ -1,92 +1,56 @@
 
-#                            EXPLORATIONS POUR LE TRAITEMENT DES DONNEES DU CASD
+#                           EXPLORATIONS POUR LE TRAITEMENT DES DONNEES DU CASD
 #
-#                                                                 antoine beroud
-#                                                                   janvier 2025
+#                                                                antoine beroud
+#                                                                  janvier 2025
 
-f <- list.files("script/fonction", 
-                pattern = "\\.R$", 
+f <- list.files("script/function",
+                pattern = "\\.R$",
                 full.names = TRUE)
 
-sapply(f, source)
+invisible(sapply(f, source))
 
 
-################################################################################
-################################################## CREATION DE FICHIERS .PARQUET
-
-# # Telechargement d'un fichier de donnees test
-# data <- read.csv("test/input/base-ic-evol-struct-pop-2020.CSV", sep = ";")
-# data$dep <- substr(data$COM, 1, 2)
-# data_plus <- do.call(rbind, replicate(21, data, simplify = FALSE))
-# data_plus <- data_plus[1:1000000, ]
-# 
-# # Conversion en fichier.sas7bdat
-# write_sas(data_plus, "test/parquet/data.sas7bdat")
-# 
-# sas_parquet(sas_files = c("test/parquet/data1.sas7bdat", 
-#                           "test/parquet/data2.sas7bdat"), 
-#             parquet_dir = "test/parquet/export/",
-#             chunk_size = 100000)
+library(sf)
+library(asf)
 
 
-################################################################################
-################################################# OUVERTURE DE FICHIERS .PARQUET
+###############################################################################
+################################################# CREATION DE FICHIERS .PARQUET
 
-# METHODE 1 --------------------------------------------------------------------
-# Creation de la connexion a DuckDB pour executer des requetes SQL
-con <- dbConnect(duckdb())
+# Telechargement d'un fichier de donnees test
+data <- read.csv("input/iris/base-ic-evol-struct-pop-2020.CSV", sep = ";")
+data$dep <- substr(data$COM, 1, 2)
+data_plus <- do.call(rbind, replicate(21, data, simplify = FALSE))
+data_plus <- data_plus[1:1000000, ]
 
-# Direction du dossier qui contient les fichiers .parquet
-parquet_dir <- "test/parquet/export/data1/"
+# Conversion en fichier.sas7bdat
+write_sas(data_plus, "output/sas/data1.sas7bdat")
 
-# Recuperation des noms de tous les fichiers .parquet
-parq <- list.files(parquet_dir, pattern = "\\.parquet$", full.names = TRUE)
-
-# Creation d'une vue SQL pour agreger les fichiers .parquet
-query <- paste0(
-  "CREATE OR REPLACE VIEW all_data AS ",
-  paste0("SELECT * FROM read_parquet('", parq, "')", collapse = " UNION ALL ")
-)
-dbExecute(con, query)
-
-# Chargement de la vue comme table DuckDB
-tbl_duckdb <- tbl(con, "all_data")
-
-# Inspections des colonnes disponibles
-tbl_duckdb$lazy_query$vars
-
-# Selection et collecte des donnees d'interet avec dplyr
-data <- tbl_duckdb %>%
-  # filter(dep == "55") %>%
-  select(c(1:2, 45:53)) %>%
-  collect()
-
-# Deconnexion de DuckDB
-dbDisconnect(con, shutdown = TRUE)
+# Transformation de fichiers .sas7bdat en .parquet
+convert_sas_parquet(sas_files = c("output/sas/data1.sas7bdat",
+                                  "output/sas/data2.sas7bdat"),
+                    parquet_dir = "output/parquet/",
+                    chunk_size = 100000)
 
 
-# METHODE 2 --------------------------------------------------------------------
-# # Ouverture des fichiers .parquet d'un dossier avec Arrow
-# tabl <- arrow::open_dataset("test/parquet/export/data1/")
-# 
-# # Selection et collecte des donnees d'interet avec dplyr
-# data <- tabl %>% 
-#   # filter(dep == "69") %>%
-#   select(c(1:2, 5:15)) %>% 
-#   collect()
+###############################################################################
+################################################ OUVERTURE DE FICHIERS .PARQUET
+
+# Definition du nom du dossier qui contient les chunks
+f <- "data1"
+
+# Definition du chemin vers ce dossier
+dir <- paste0("output/parquet/", f, "/")
+
+# Ouverture du fichier dans R
+data <- open_parquet(dir = dir,
+                     id = c("COM"),
+                     col = c("P20_POP"))
 
 
-# Agregation des iris en communes
-data <- data %>%
-  group_by(COM) %>%
-  summarise(
-    across(.cols = where(is.numeric), .fns = sum, .names = "{.col}"),
-    .groups = "drop"
-  )
-
-
-################################################################################
-############################################################# SECRET STATISTIQUE
+###############################################################################
+############################################################ SECRET STATISTIQUE
 
 # Data.frame d'exemple
 x <- data.frame(
@@ -107,65 +71,137 @@ test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 
 
 
-################################################################################
+###############################################################################
+################################################################## FOND
+library(sf)
+library(mapsf)
+library(rmapshaper)
 
-# Fonction pour generer des data.frames avec des valeurs aleatoires
-create_df <- function(names) {
+load("input/mar/donnees/AR01_geog_constante.RData")
+
+com <- sf.comf
+iris <- sf.irisf
+
+rm(d.comf.app, d.comf.pass, d.irisf.pass, sf.comf, sf.irisf)
+
+fond <- com
+
+
+create_fond <- function(fond, id) {
   
-  # Initialisation d'une liste vide pour stocker les data.frames generes
-  dfs <- list()
+  # Creation d'une couche avec les contours de l'hexagone
+  met <- fond[!grepl("^97|^98", fond$COMFC_CODE), ]
+  met <- sf::st_union(met)
+  met <- sf::st_as_sf(met)
   
-  # Creation d'un data.frame pour chaque nom dans le vecteur, 
-  for (name in names) {
-    df <- data.frame(
-      commune = c("com1", "com2", "com3", "com4", "com5"),
-      q1 = sample(1:20, 5, replace = TRUE),
-      q2 = sample(0:40, 5, replace = TRUE),
-      q3 = sample(0:20, 5, replace = TRUE),
-      q4 = sample(0:30, 5, replace = TRUE)
-    )
-    
-    # Ajout du data.frame a la liste
-    dfs[[name]] <- df
+  # Calcul des limites de la zone de l'hexagone
+  bbox <- sf::st_bbox(met)
+  xmin_met <- as.numeric(bbox[1])
+  ymin_met <- as.numeric(bbox[2])
+  xmax_met <- as.numeric(bbox[3])
+  ymax_met <- as.numeric(bbox[4])
+  
+  # Espace entre les encarts et l'hexagone
+  space <- (xmax_met - xmin_met) *0.05
+  
+  # Taille des encarts par rapport a la taille de l'hexagone
+  pct_met <- 0.18
+  
+  # Definition du positionnement de chaque encart
+  # Guadeloupe
+  xmax <- xmin_met - space
+  xmin <- xmax - ((ymax_met - ymin_met) *(pct_met))
+  ymax <- ymax_met
+  ymin <- ymax - ((ymax_met - ymin_met) *(pct_met))
+  bb <- c(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax)
+  boxes <- sf::st_as_sfc(sf::st_bbox(bb, crs = "EPSG:2154"))
+  boxes <- sf::st_as_sf(boxes)
+  boxes$id <- 1
+  boxes$name <- "Guadeloupe"
+  
+  # Martinique
+  xmax <- xmin_met - space
+  xmin <- xmax - ((ymax_met - ymin_met) *(pct_met))
+  ymax <- ymax_met - (((ymax_met - ymin_met) *(pct_met)) *1)
+  ymin <- ymax - ((ymax_met - ymin_met) *(pct_met))
+  bb <- c(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax)
+  xx <- sf::st_as_sfc(sf::st_bbox(bb, crs = "EPSG:2154"))
+  xx <- sf::st_as_sf(xx)
+  xx$id <- 2
+  xx$name <- "Martinique"
+  boxes <- rbind(boxes, xx)
+  
+  # Guyane
+  xmax <- xmin_met - space
+  xmin <- xmax - ((ymax_met - ymin_met) *(pct_met))
+  ymax <- ymax_met - (((ymax_met - ymin_met) *(pct_met)) *2)
+  ymin <- ymax - ((ymax_met - ymin_met) *(pct_met))
+  bb <- c(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax)
+  xx <- sf::st_as_sfc(sf::st_bbox(bb, crs = "EPSG:2154"))
+  xx <- sf::st_as_sf(xx)
+  xx$id <- 3
+  xx$name <- "Guyane"
+  boxes <- rbind(boxes, xx)
+  
+  # Reunion
+  xmax <- xmin_met - space
+  xmin <- xmax - ((ymax_met - ymin_met) *(pct_met))
+  ymax <- ymax_met - (((ymax_met - ymin_met) *(pct_met)) *3)
+  ymin <- ymax - ((ymax_met - ymin_met) *(pct_met))
+  bb <- c(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax)
+  xx <- sf::st_as_sfc(sf::st_bbox(bb, crs = "EPSG:2154"))
+  xx <- sf::st_as_sf(xx)
+  xx$id <- 4
+  xx$name <- "Reunion"
+  boxes <- rbind(boxes, xx)
+  
+  # Mayotte
+  xmax <- xmin_met - space
+  xmin <- xmax - ((ymax_met - ymin_met) *(pct_met))
+  ymax <- ymax_met - (((ymax_met - ymin_met) *(pct_met)) *4)
+  ymin <- ymax - ((ymax_met - ymin_met) *(pct_met))
+  bb <- c(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax)
+  xx <- sf::st_as_sfc(sf::st_bbox(bb, crs = "EPSG:2154"))
+  xx <- sf::st_as_sf(xx)
+  xx$id <- 5
+  xx$name <- "Mayotte"
+  boxes <- rbind(boxes, xx)
+  
+  # Coordonnees veritables des zones ou se situent les DROM 
+  boxes$target <- list(c(-62.05, 15.64, -60.99, 16.71), #xmin, ymin, xmax, ymax
+                       c(-61.44, 14.19, -60.6, 15.09),
+                       c(-55.5, 1.8, -50.8, 6),
+                       c(54.99,-21.61, 56.06,-20.64),
+                       c(44.8, -13.2, 45.5, -12.5)
+  )
+  
+  # EPSG local pour chaque zone
+  boxes$epsg_loc <- c(5490, 5490, 2972, 2975, 4471)
+  sf::st_geometry(boxes) <- "geometry"
+  sf::st_crs(boxes) <- 2154
+  
+  # Creation des encarts
+  input <- fond
+  input <- sf::st_transform(input, crs = "EPSG:4326")
+  met <- sf::st_transform(met, crs = "EPSG:4326")
+  inter <- sf::st_intersects(input, met, sparse = FALSE)
+  out <- input[inter, ]
+  out <- sf::st_transform(out, crs = "EPSG:2154")
+  
+  for (i in 1 : nrow(boxes)){
+    box <- boxes[i,]
+    bb <- as.vector(unlist(box[,"target"]))
+    bb <- c(xmin = bb[1], ymin = bb[2], xmax = bb[3], ymax = bb[4])
+    mask <- sf::st_as_sfc(sf::st_bbox(bb, crs = "EPSG:4326"))
+    inter <- sf::st_intersects(input, mask, sparse = FALSE)
+    x <- input[inter, ]
+    mask <- sf::st_transform(mask, box[,"epsg_loc", drop = T][1])
+    x <- sf::st_transform(x, box[,"epsg_loc", drop = T][1])
+    inset <- mapinsetr::m_r(x = x, mask = mask,  y = box)
+    out <- rbind(out, inset)
   }
   
-  return(dfs)
-}
-
-
-# Appeler la fonction pour générer les data.frames
-dfs_list <- generate_df(names = c("2000", "2010", "2020", "2030"))
-
-# Test de la fonction sur les exemples
-resultat <- calcul_tvam(
-  dataframes = dfs_list,
-  annees = c(2000, 2010, 2020, 2030),
-  id = "commune"
-)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  fond <- sf::st_transform(out, crs = "EPSG:2154")
+  
+  return(fond)
+} 
