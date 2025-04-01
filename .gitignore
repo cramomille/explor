@@ -3,5 +3,5 @@
 .RData
 .Ruserdata
 
-data/
-test/
+input/
+output/
