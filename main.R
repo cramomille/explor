@@ -104,8 +104,7 @@ fond <- rbind(iris, mayo)
 fond_created <- create_fond(fond)
 
 # Export
-st_write(fond, "test.gpkg")
-st_write(fond_created, "test_created.gpkg")
+st_write(fond_created, "output/irisar.gpkg")
 
 
 
