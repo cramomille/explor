@@ -75,12 +75,14 @@ test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 
 iris <- st_read("input/mar/donnees/shapefiles/AR02_sf_irisr.shp")
 iris <- st_as_sf(iris)
+iris <- st_transform(iris, 2154)
 
 iris <- iris[, c(1,2,5,6,7)]
 colnames(iris) <- c("IRIS_CODE", "IRIS_LIB", "COMF_CODE", "COMF_LIB", "P21_POP", "geometry")
 
 mayo <- st_read("input/mar/donnees/shapefiles/AR01_sf_irisf.shp")
 mayo <- st_as_sf(mayo)
+mayo <- st_transform(mayo, 2154)
 
 mayo <- mayo[grepl("^976", mayo$IRISF_CODE), ]
 
@@ -213,7 +215,7 @@ for (i in 1 : nrow(boxes)){
 
 fond <- sf::st_transform(out, crs = "EPSG:2154")
 
-
+st_write(fond, "out.gpkg")
 
 
 
