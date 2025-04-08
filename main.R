@@ -73,6 +73,7 @@ test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 ###############################################################################
 ########################################################################## TEST
 
+# Ouverture du fichier avec les irisr
 iris <- st_read("input/mar/donnees/shapefiles/AR02_sf_irisr.shp")
 iris <- st_as_sf(iris)
 iris <- st_transform(iris, 2154)
@@ -80,6 +81,7 @@ iris <- st_transform(iris, 2154)
 iris <- iris[, c(1,2,5,6,7)]
 colnames(iris) <- c("IRIS_CODE", "IRIS_LIB", "COMF_CODE", "COMF_LIB", "P21_POP", "geometry")
 
+# Ouverture du fichier avec toutes les iris pour ajouter Mayotte
 mayo <- st_read("input/mar/donnees/shapefiles/AR01_sf_irisf.shp")
 mayo <- st_as_sf(mayo)
 mayo <- st_transform(mayo, 2154)
@@ -93,133 +95,17 @@ mayo$COMF_LIB <- as.numeric(mayo$COMF_LIB)
 mayo$P21_POP <- as.numeric(mayo$P21_POP)
 
 mayo <- mayo[, c(1,2,4,7,8)]
-
 colnames(mayo) <- c("IRIS_CODE", "IRIS_LIB", "COMF_CODE", "COMF_LIB", "P21_POP", "geometry")
 
-
+# Collage des deux data.frames
 fond <- rbind(iris, mayo)
 
+# Utilisation de la fonction pour deplacer les geometries des DROM
+fond_created <- create_fond(fond)
 
-
-
-# Creation d'une couche avec les contours de l'hexagone
-met <- sf::st_union(fond[!grepl("^98|^97", fond$COMF_CO),])
-met <- sf::st_as_sf(met)
-
-# Calcul des limites de la zone de l'hexagone
-bbox <- sf::st_bbox(met)
-xmin_met <- as.numeric(bbox[1])
-ymin_met <- as.numeric(bbox[2])
-xmax_met <- as.numeric(bbox[3])
-ymax_met <- as.numeric(bbox[4])
-
-# Espace entre les encarts et l'hexagone
-space <- (xmax_met - xmin_met) *0.05
-
-# Taille des encarts par rapport a la taille de l'hexagone
-ptc_met <- 0.18
-
-# Definition du positionnement de chaque encart
-# Guadeloupe
-xmax <- xmin_met - space
-xmin <- xmax - ((ymax_met - ymin_met) *(ptc_met))
-ymax <- ymax_met
-ymin <- ymax - ((ymax_met - ymin_met) *(ptc_met))
-bb <- c(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax)
-boxes <- sf::st_as_sfc(sf::st_bbox(bb, crs = "EPSG:2154"))
-boxes <- sf::st_as_sf(boxes)
-boxes$id <- 1
-boxes$name <- "Guadeloupe"
-
-# Martinique
-xmax <- xmin_met - space
-xmin <- xmax - ((ymax_met - ymin_met) *(ptc_met))
-ymax <- ymax_met - (((ymax_met - ymin_met) *(ptc_met)) *1)
-ymin <- ymax - ((ymax_met - ymin_met) *(ptc_met))
-bb <- c(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax)
-xx <- sf::st_as_sfc(sf::st_bbox(bb, crs = "EPSG:2154"))
-xx <- sf::st_as_sf(xx)
-xx$id <- 2
-xx$name <- "Martinique"
-boxes <- rbind(boxes, xx)
-
-# Guyane
-xmax <- xmin_met - space
-xmin <- xmax - ((ymax_met - ymin_met) *(ptc_met))
-ymax <- ymax_met - (((ymax_met - ymin_met) *(ptc_met)) *2)
-ymin <- ymax - ((ymax_met - ymin_met) *(ptc_met))
-bb <- c(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax)
-xx <- sf::st_as_sfc(sf::st_bbox(bb, crs = "EPSG:2154"))
-xx <- sf::st_as_sf(xx)
-xx$id <- 3
-xx$name <- "Guyane"
-boxes <- rbind(boxes, xx)
-
-# Reunion
-xmax <- xmin_met - space
-xmin <- xmax - ((ymax_met - ymin_met) *(ptc_met))
-ymax <- ymax_met - (((ymax_met - ymin_met) *(ptc_met)) *3)
-ymin <- ymax - ((ymax_met - ymin_met) *(ptc_met))
-bb <- c(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax)
-xx <- sf::st_as_sfc(sf::st_bbox(bb, crs = "EPSG:2154"))
-xx <- sf::st_as_sf(xx)
-xx$id <- 4
-xx$name <- "Reunion"
-boxes <- rbind(boxes, xx)
-
-# Mayotte
-xmax <- xmin_met - space
-xmin <- xmax - ((ymax_met - ymin_met) *(ptc_met))
-ymax <- ymax_met - (((ymax_met - ymin_met) *(ptc_met)) *4)
-ymin <- ymax - ((ymax_met - ymin_met) *(ptc_met))
-bb <- c(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax)
-xx <- sf::st_as_sfc(sf::st_bbox(bb, crs = "EPSG:2154"))
-xx <- sf::st_as_sf(xx)
-xx$id <- 5
-xx$name <- "Mayotte"
-boxes <- rbind(boxes, xx)
-
-# Coordonnees veritables des zones ou se situent les DROM 
-boxes$target <- list(c(-62.05, 15.64, -60.99, 16.71), #xmin, ymin, xmax, ymax
-                     c(-61.44, 14.19, -60.6, 15.09),
-                     c(-55.5, 1.8, -50.8, 6),
-                     c(54.99,-21.61, 56.06,-20.64),
-                     c(44.8, -13.2, 45.5, -12.5)
-)
-
-# EPSG local pour chaque zone
-boxes$epsg_loc <- c(5490, 5490, 2972, 2975, 4471)
-sf::st_geometry(boxes) <- "geometry"
-sf::st_crs(boxes) <- 2154
-
-# Creation des encarts
-input <- fond
-input <- sf::st_transform(input, crs = "EPSG:4326")
-met <- sf::st_transform(met, crs = "EPSG:4326")
-inter <- sf::st_intersects(input, met, sparse = FALSE)
-out <- input[inter,]
-out <- sf::st_transform(out, crs = "EPSG:2154")
-
-for (i in 1 : nrow(boxes)){
-  box <- boxes[i,]
-  bb <- as.vector(unlist(box[,"target"]))
-  bb <- c(xmin = bb[1], ymin = bb[2], xmax = bb[3], ymax = bb[4])
-  mask <- sf::st_as_sfc(sf::st_bbox(bb, crs = "EPSG:4326"))
-  inter <- sf::st_intersects(input, mask, sparse = FALSE)
-  x <- input[inter, ]
-  mask <- sf::st_transform(mask, box[,"epsg_loc", drop = T][1])
-  x <- sf::st_transform(x, box[,"epsg_loc", drop = T][1])
-  inset <- mapinsetr::m_r(x = x, mask = mask,  y = box)
-  out <- rbind(out, inset)
-}
-
-fond <- sf::st_transform(out, crs = "EPSG:2154")
-
-st_write(fond, "out.gpkg")
-
-
-
-
+# Export
+st_write(fond, "test.gpkg")
+st_write(fond_created, "test_created.gpkg")
 
 
 
