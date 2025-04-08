@@ -70,13 +70,36 @@ test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 # sum(complete.cases(test))
 
 
-
 ###############################################################################
 ########################################################################## TEST
 
-fond <- st_read("input/mar/donnees/shapefiles/AR02_sf_irisr.shp")
+iris <- st_read("input/mar/donnees/shapefiles/AR02_sf_irisr.shp")
+iris <- st_as_sf(iris)
 
-  
+iris <- iris[, c(1,2,5,6,7)]
+colnames(iris) <- c("IRIS_CODE", "IRIS_LIB", "COMF_CODE", "COMF_LIB", "P21_POP", "geometry")
+
+mayo <- st_read("input/mar/donnees/shapefiles/AR01_sf_irisf.shp")
+mayo <- st_as_sf(mayo)
+
+mayo <- mayo[grepl("^976", mayo$IRISF_CODE), ]
+
+mayo$COMF_LIB <- NA
+mayo$P21_POP <- NA
+
+mayo$COMF_LIB <- as.numeric(mayo$COMF_LIB)
+mayo$P21_POP <- as.numeric(mayo$P21_POP)
+
+mayo <- mayo[, c(1,2,4,7,8)]
+
+colnames(mayo) <- c("IRIS_CODE", "IRIS_LIB", "COMF_CODE", "COMF_LIB", "P21_POP", "geometry")
+
+
+fond <- rbind(iris, mayo)
+
+
+
+
 # Creation d'une couche avec les contours de l'hexagone
 met <- sf::st_union(fond[!grepl("^98|^97", fond$COMF_CO),])
 met <- sf::st_as_sf(met)
@@ -168,7 +191,7 @@ sf::st_geometry(boxes) <- "geometry"
 sf::st_crs(boxes) <- 2154
 
 # Creation des encarts
-input <- iris
+input <- fond
 input <- sf::st_transform(input, crs = "EPSG:4326")
 met <- sf::st_transform(met, crs = "EPSG:4326")
 inter <- sf::st_intersects(input, met, sparse = FALSE)
@@ -181,7 +204,7 @@ for (i in 1 : nrow(boxes)){
   bb <- c(xmin = bb[1], ymin = bb[2], xmax = bb[3], ymax = bb[4])
   mask <- sf::st_as_sfc(sf::st_bbox(bb, crs = "EPSG:4326"))
   inter <- sf::st_intersects(input, mask, sparse = FALSE)
-  x <- input[inter,]
+  x <- input[inter, ]
   mask <- sf::st_transform(mask, box[,"epsg_loc", drop = T][1])
   x <- sf::st_transform(x, box[,"epsg_loc", drop = T][1])
   inset <- mapinsetr::m_r(x = x, mask = mask,  y = box)
@@ -189,12 +212,6 @@ for (i in 1 : nrow(boxes)){
 }
 
 fond <- sf::st_transform(out, crs = "EPSG:2154")
-
-
-
-
-
-
 
 
 
