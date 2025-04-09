@@ -8,7 +8,7 @@
 #' @param vars le vecteur avec le nom des colonne d'interet que l'on souhaite conserver
 #' 
 #' @return 
-#' La fonction ouvre un objet data.frame
+#' La fonction creer un objet list contenant des objets data.frame
 #' 
 #' @examples
 #' data <- open_parquets(dir = "test/parquet/export/",
