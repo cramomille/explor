@@ -12,7 +12,9 @@ invisible(sapply(f, source))
 
 
 library(sf)
-library(asf)
+library(arrow)
+library(duckdb)
+library(dplyr)
 
 
 ###############################################################################
@@ -50,67 +52,82 @@ convert_sas_parquet(sas_files = c("output/sas/data1.sas7bdat",
 
 
 
+dir <- "output/parquet/"
+folder <- c("data1", "data2")
+id <- c("id", "ID")
+vars <- list(c("value1", "VALUE1"), c("value2", "VALUE2"))
 
-library(arrow)
-library(duckdb)
-library(dplyr)
+f <- "data1"
+i <- 1
 
-open_parquet <- function(dir, folder, id, vars) {
+open_parquets <- function(dir, 
+                          folder, 
+                          id, 
+                          vars) {
   
-  # Création de la connexion à DuckDB pour exécuter des requêtes SQL
+  # Creation de la connexion a DuckDB pour executer des requetes SQL
   con <- dbConnect(duckdb())
   
-  # Initialisation de la liste pour stocker les données
-  all_data <- list()
+  # Initialisation de la liste pour stocker les donnees
+  result <- list()
   
   # Boucle pour traiter chaque dossier
   for (f in folder) {
-    # Création du chemin vers le dossier
+    
+    # Creation du chemin vers le dossier
     folder_dir <- paste0(dir, f, "/")
     
-    # Récupération des noms de tous les fichiers .parquet dans le dossier
-    parquet_files <- list.files(folder_dir, pattern = "\\.parquet$", full.names = TRUE)
+    # Recuperation des noms de tous les fichiers .parquet
+    parquet <- list.files(folder_dir, pattern = "\\.parquet$", full.names = TRUE)
     
-    if (length(parquet_files) == 0) {
-      stop(paste("Aucun fichier .parquet trouvé dans le dossier:", folder_dir))
+    if (length(parquet) == 0) {
+      stop(paste("Aucun fichier .parquet trouve dans le dossier:", folder_dir))
     }
     
-    # Création de la requête SQL pour agréger les fichiers .parquet
+    # Creation d'une vue SQL pour agreger les fichiers .parquet
     query <- paste0(
       "CREATE OR REPLACE VIEW all_data AS ",
-      paste0("SELECT * FROM read_parquet('", parquet_files, "')", collapse = " UNION ALL ")
+      paste0("SELECT * FROM read_parquet('", parquet, "')", collapse = " UNION ALL ")
     )
     dbExecute(con, query)
     
-    # Chargement de la vue comme table DuckDB
+    # Chargement de la vue en tant que table DuckDB
     tbl_duckdb <- tbl(con, "all_data")
     
-    # Sélectionner les colonnes d'intérêt pour ce dossier (en fonction de `vars` pour ce dossier)
-    vars_for_folder <- vars[[which(folder == f)]]  # Choisir les colonnes spécifiées pour ce dossier
     
-    # Test de toutes les combinaisons possibles entre id et vars_for_folder
-    combinaison <- expand.grid(id = id, col = vars_for_folder, stringsAsFactors = FALSE)
     
-    # Boucle pour tester les différentes combinaisons
+    
+    # Generation d'une liste des noms des variables
+    vars_names <- paste0("var", seq_along(vars))
+    
+    # Generation de toutes les combinaisons de noms de colonnes possibles
+    combinaison <- do.call(expand.grid, c(list(id = id), setNames(vars, vars_names)))
+    
+    
+    # Boucle pour tester les différentes combinaisons possibles
     for (i in seq_len(nrow(combinaison))) {
+      
       comb <- combinaison[i, ]
       
       tryCatch({
-        # Sélection et collecte des données d'intérêt avec dplyr
+        # Selection d'une combinaison de noms des colonnes a tester
+        select_col <- unlist(lapply(comb, as.character))
+        
+        # Selection et collecte des donnees d'interet avec dplyr
         selected_data <- tbl_duckdb %>%
-          select(all_of(c(comb$id, comb$col))) %>%
+          select(all_of(select_col)) %>%
           collect()
         
-        # Renommage des colonnes pour éviter les conflits
-        names(selected_data) <- c(id[1], comb$col)
+        colnames(selected_data) <- select_col
         
-        # Stockage des données dans la liste
-        all_data[[f]] <- selected_data
-        print(paste("Combinaison : id =", comb$id, "/ col =", comb$col, "dans le dossier", f))
-        break  # Sort de la boucle si tout est correct
+        if (nrow(selected_data) > 0) {
+          # Stockage des donnees dans la liste
+          result[[length(result) + 1]] <- selected_data
+          print(paste(f, ":", paste0(select_col, collapse = " | ")))
+          break
+        }
       }, error = function(e) {
-        # Si une erreur survient, on passe à la prochaine combinaison
-        next
+        # Si une erreur se produit, on ignore cette combinaison
       })
     }
   }
@@ -118,26 +135,28 @@ open_parquet <- function(dir, folder, id, vars) {
   # Déconnexion de DuckDB
   dbDisconnect(con, shutdown = TRUE)
   
-  # Combine toutes les données de tous les dossiers en une seule table
-  final_data <- bind_rows(all_data)
-  
-  return(final_data)
+  return(result)
 }
+
+
 
 # Exemple d'utilisation
 dir <- "output/parquet/"
 folder <- c("data1", "data2")
-id <- c("id", "ID")  # Liste des colonnes identifiantes
-vars <- list(c("col1", "COL1"), c("col2", "COL2"))  # Liste des colonnes d'intérêt pour chaque dossier
+id <- c("id", "ID")
+vars <- list(c("value1", "VALUE1"), c("value2", "VALUE2"))
 
 # Appel de la fonction
-final_data <- open_parquet(dir = dir, folder = folder, id = id, vars = vars)
+final_data <- open_parquets(dir = dir, 
+                            folder = folder, 
+                            id = id, 
+                            vars = vars)
+ 
 
-# Affichage du résultat
-print(final_data)
 
 
-
+data1 <- final_data[[1]]
+data2 <- final_data[[2]]
 
 
 
