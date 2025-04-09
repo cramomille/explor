@@ -12,13 +12,11 @@ invisible(sapply(f, source))
 
 
 library(sf)
-library(arrow)
-library(duckdb)
-library(dplyr)
+library(asf)
 
 
 ###############################################################################
-################################################# CREATION DE FICHIERS .PARQUET
+############################################ CREATION DE FICHIERS .PARQUET TEST
 
 # Creation de fichiers de donnees test
 set.seed(123)
@@ -48,95 +46,21 @@ convert_sas_parquet(sas_files = c("output/sas/data1.sas7bdat",
 
 
 ###############################################################################
-################################################ OUVERTURE DE FICHIERS .PARQUET
+########################################### OUVERTURE DE FICHIERS .PARQUET TEST
 
 # Ouvertur d'un fichier .parquet
 data1 <- open_parquet(dir = "output/parquet/data1",
-                      id = "id",
-                      vars = c("value1", "value2"))
+                      col = c("id", "value1", "value2"))
 
 # Ouverture de deux fichiers .parquet
 result <- open_parquets(dir = "output/parquet/", 
                         folder = c("data1", "data2"), 
-                        id = c("id", "ID"), 
-                        vars = list(c("value1", "VALUE1"), c("value2", "VALUE2")))
+                        col = list(c("id", "ID"), 
+                                   c("value1", "VALUE1"), 
+                                   c("value2", "VALUE2")))
  
 data1 <- result[[1]]
 data2 <- result[[2]]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ###############################################################################
@@ -154,39 +78,12 @@ x <- data.frame(
 
 test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 
-# # Test de la fonction sur un dataframe de 35 000 entites
-# test <- secret_df(data, cols = c(3:12), limit = 11)
-# 
-# sum(complete.cases(test))
-
 
 ###############################################################################
-########################################################################## TEST
+######################################## TEST MAILLAGE COMPOSITE D'ALIETTE ROUX
 
 AR01 <- load("input/mar/donnees/AR01_geog_constante.RData")
 AR02 <- load("input/mar/donnees/AR02_maille_IRISr.RData")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
