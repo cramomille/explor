@@ -41,7 +41,7 @@ open_parquet <- function(dir,
   # Chargement de la vue comme table DuckDB
   tbl_duckdb <- tbl(con, "all_data")
   
-  # Selection et collecte des donnees d'interet avec dplyr
+  # Selection et collecte des colonnes choisies avec dplyr
   data <- tbl_duckdb %>% 
     select(all_of(col)) %>% 
     collect()

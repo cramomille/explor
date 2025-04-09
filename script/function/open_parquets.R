@@ -60,7 +60,7 @@ open_parquets <- function(dir,
     # Generation de toutes les combinaisons de noms de colonnes possibles
     combinaison <- do.call(expand.grid, c(setNames(col, col_names)))
     
-    # Boucle pour tester les différentes combinaisons possibles
+    # Boucle pour tester les differentes combinaisons possibles
     for (i in seq_len(nrow(combinaison))) {
       
       comb <- combinaison[i, ]
@@ -69,7 +69,7 @@ open_parquets <- function(dir,
         # Selection d'une combinaison de noms des colonnes a tester
         select_col <- unlist(lapply(comb, as.character))
         
-        # Selection et collecte des donnees d'interet avec dplyr
+        # Selection et collecte des colonnes choisies avec dplyr
         selected_data <- tbl_duckdb %>%
           select(all_of(select_col)) %>%
           collect()
