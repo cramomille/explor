@@ -1,11 +1,11 @@
-#' @title Ouverture d'un fichier .parquet dans R
+#' @title Ouverture de plusieurs fichiers .parquet dans R
 #' @description
-#' Cette fonction permet de selectionner des colonnes d'interet presentes dans un
-#' fichier .parquet et de les charger dans R
+#' Cette fonction permet de selectionner des colonnes d'interet presentes dans des
+#' fichiers .parquet et de les charger dans R
 #' 
-#' @param dir le chemin vers le dossier qui contient les chunks .parquet du fichier
-#' @param id le vecteur avec le nom de la colonne identifiant que l'on souhaite conserver
-#' @param vars le vecteur avec le nom des colonne d'interet que l'on souhaite conserver
+#' @param dir le chemin vers le dossier qui contient les dossiers 'folder'
+#' @param folder le vecteur avec les noms des dossiers qui contiennent les chunks .parquet
+#' @param col le vecteur avec le ou les noms des colonnes du fichier .parquet que l'on souhaite conserver
 #' 
 #' @return 
 #' La fonction creer un objet list contenant des objets data.frame
@@ -13,8 +13,9 @@
 #' @examples
 #' data <- open_parquets(dir = "test/parquet/export/",
 #'                       folder = c("data1", "data2")
-#'                       id = c("id", "ID"),
-#'                       vars = list(c("value1", "VALUE1"), c("value2", "VALUE2")))
+#'                       col = list(c("id", "ID"), 
+#'                                  c("value1", "VALUE1"), 
+#'                                  c("value2", "VALUE2")))
 
 library(arrow)
 library(duckdb)
@@ -22,8 +23,7 @@ library(dplyr)
 
 open_parquets <- function(dir, 
                           folder, 
-                          id, 
-                          vars) {
+                          col) {
   
   # Creation de la connexion a DuckDB pour executer des requetes SQL
   con <- dbConnect(duckdb())
@@ -54,13 +54,11 @@ open_parquets <- function(dir,
     # Chargement de la vue en tant que table DuckDB
     tbl_duckdb <- tbl(con, "all_data")
     
-    
     # Generation d'une liste des noms des variables
-    vars_names <- paste0("var", seq_along(vars))
+    col_names <- paste0("col", seq_along(col))
     
     # Generation de toutes les combinaisons de noms de colonnes possibles
-    combinaison <- do.call(expand.grid, c(list(id = id), setNames(vars, vars_names)))
-    
+    combinaison <- do.call(expand.grid, c(setNames(col, col_names)))
     
     # Boucle pour tester les différentes combinaisons possibles
     for (i in seq_len(nrow(combinaison))) {
@@ -76,20 +74,22 @@ open_parquets <- function(dir,
           select(all_of(select_col)) %>%
           collect()
         
+        # Conversion en data.farme et rennomage des colonnes
+        selected_data <- as.data.frame(selected_data)
         colnames(selected_data) <- select_col
         
+        # Stockage des donnees dans la liste
         if (nrow(selected_data) > 0) {
-          # Stockage des donnees dans la liste
           result[[length(result) + 1]] <- selected_data
           print(paste(f, ":", paste0(select_col, collapse = " | ")))
-          break
+          break # on arrete quand la comb valide est trouvee
         }
       }, error = function(e) {
       })
     }
   }
   
-  # Déconnexion de DuckDB
+  # Deconnexion de DuckDB
   dbDisconnect(con, shutdown = TRUE)
   
   return(result)
