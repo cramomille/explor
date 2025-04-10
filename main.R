@@ -48,19 +48,32 @@ convert_sas_parquet(sas_files = c("output/sas/data1.sas7bdat",
 ###############################################################################
 ########################################### OUVERTURE DE FICHIERS .PARQUET TEST
 
-# Ouvertur d'un fichier .parquet
-data1 <- open_parquet(dir = "output/parquet/data1",
-                      col = c("id", "value1", "value2"))
+names <- get_parquet_names(dir = "output/parquet/data1")
 
-# Ouverture de deux fichiers .parquet
-result <- open_parquets(dir = "output/parquet/", 
-                        folder = c("data1", "data2"), 
-                        col = list(c("id", "ID"), 
-                                   c("value1", "VALUE1"), 
+# Ouverture de fichiers .parquet
+result <- open_parquet(dir = "output/parquet/",
+                       file = c("data1", "data2", "data3_chunk01.parquet"),
+                       cols = list(c("id", "ID"),
+                                   c("value1", "VALUE1"),
                                    c("value2", "VALUE2")))
  
 data1 <- result[[1]]
 data2 <- result[[2]]
+data3 <- result[[3]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ###############################################################################
@@ -75,6 +88,8 @@ x <- data.frame(
   ca3 = c(30, 10, 10, 20, 0),
   ca4 = c(40, 40, 10, 20, 20)
 )
+
+y <- dput(x) # test
 
 test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 
