@@ -62,7 +62,7 @@ open_parquet <- function(dir,
     tbl_duckdb <- tbl(con, "all_data")
     
     # Recuperation des noms des colonnes que l'on souhaite conserver
-    col_names <- paste0("col", seq_along(cols))
+    cols_names <- paste0("col", seq_along(cols))
     
     # Generation de toutes les combinaisons de noms de colonnes possibles
     combinaison <- do.call(expand.grid, c(setNames(cols, cols_names)))
@@ -74,16 +74,16 @@ open_parquet <- function(dir,
       
       tryCatch({
         # Selection de la combinaison de noms des colonnes a tester
-        selected_col <- unlist(lapply(comb, as.character))
+        selected_cols <- unlist(lapply(comb, as.character))
         
         # Selection et collecte des colonnes choisies avec dplyr
         selected_data <- tbl_duckdb %>%
-          select(all_of(selected_col)) %>%
+          select(all_of(selected_cols)) %>%
           collect()
         
         # Conversion en data.farme et rennomage des colonnes
         selected_data <- as.data.frame(selected_data)
-        colnames(selected_data) <- selected_col
+        colnames(selected_data) <- selected_cols
         
         if (nrow(selected_data) > 0) {
           
@@ -91,7 +91,7 @@ open_parquet <- function(dir,
           result[[length(result) + 1]] <- selected_data
           
           # Message d'information sur la combinaison utilisee
-          print(paste(f, ":", paste0(selected_col, collapse = " | ")))
+          print(paste(f, ":", paste0(selected_cols, collapse = " | ")))
           
           # Arret des test des que la combinaison valide est trouvee
           break

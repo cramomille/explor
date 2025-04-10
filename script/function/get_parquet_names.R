@@ -47,6 +47,7 @@ get_parquet_names <- function(dir) {
   
   # Selection et collecte des noms des colonnes du fichier .parquet
   names <- colnames(tbl_duckdb)
+  print(names)
   
   # Deconnexion de DuckDB
   dbDisconnect(con, shutdown = TRUE)

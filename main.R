@@ -48,7 +48,10 @@ convert_sas_parquet(sas_files = c("output/sas/data1.sas7bdat",
 ###############################################################################
 ########################################### OUVERTURE DE FICHIERS .PARQUET TEST
 
+# recuperation des noms d'un fichier parquet
 names <- get_parquet_names(dir = "output/parquet/data1")
+names <- get_parquet_names(dir = "output/parquet/data2")
+names <- get_parquet_names(dir = "output/parquet/data3_chunk01.parquet")
 
 # Ouverture de fichiers .parquet
 result <- open_parquet(dir = "output/parquet/",
