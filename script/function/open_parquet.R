@@ -38,11 +38,9 @@ open_parquet <- function(dir,
     
     # Verification pour savoir si l'element est un fichier individuel ou un dossier
     if (grepl("\\.parquet$", f)) {
-      # Fichier individuel
       parquet <- file.path(dir, f)
       
     } else {
-      # Dossier avec les chunks d'un fichier .parquet
       folder_dir <- file.path(dir, f)
       parquet <- list.files(folder_dir, pattern = "\\.parquet$", full.names = TRUE)
       
@@ -69,7 +67,6 @@ open_parquet <- function(dir,
     
     # Boucle de test des differentes combinaisons possibles -------------------
     for (i in seq_len(nrow(combinaison))) {
-      
       comb <- combinaison[i, ]
       
       tryCatch({
@@ -86,7 +83,6 @@ open_parquet <- function(dir,
         colnames(selected_data) <- selected_cols
         
         if (nrow(selected_data) > 0) {
-          
           # Stockage des donnees dans la liste
           result[[length(result) + 1]] <- selected_data
           

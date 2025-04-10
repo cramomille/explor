@@ -23,15 +23,13 @@ get_parquet_names <- function(dir) {
   
   # Verification pour savoir si l'element est un fichier individuel ou un dossier
   if (grepl("\\.parquet$", dir)) {
-    # Fichier individuel
     parquet <- file.path(dir)
     
   } else {
-    # Dossier avec les chunks d'un fichier .parquet
     parquet <- list.files(dir, pattern = "\\.parquet$", full.names = TRUE)
     
     if (length(parquet) == 0) {
-      stop(paste("Aucun fichier .parquet dans le dossier:", folder_dir))
+      stop(paste("Aucun fichier .parquet dans le dossier:", dir))
     }
   }
   
@@ -46,11 +44,11 @@ get_parquet_names <- function(dir) {
   tbl_duckdb <- tbl(con, "all_data")
   
   # Selection et collecte des noms des colonnes du fichier .parquet
-  names <- colnames(tbl_duckdb)
+  col_names <- colnames(tbl_duckdb)
   print(names)
   
   # Deconnexion de DuckDB
   dbDisconnect(con, shutdown = TRUE)
   
-  return(names)
+  return(col_names)
 }
