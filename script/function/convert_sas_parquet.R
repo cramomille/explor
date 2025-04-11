@@ -1,15 +1,19 @@
 #' @title Transformation de fichiers .sas7bdat en fichiers .parquet
 #' @description
-#' Cette fonction permet de creer des fichiers .parquet a partir de fichiers .sas7bdat
+#' Cette fonction permet de creer des fichiers .parquet a partir de fichiers 
+#' .sas7bdat
 #' 
 #' @param sas_files le vecteur avec le chemin vers le ou les fichiers .sas7bdat
-#' @param parquet_dir le chemin vers le dossier ou sera cree le ou les dossiers qui contiendront les fichiers .parquet
-#' @param chunk_size le nombre de lignes des chunks qui constitueront le fichier .parquet
+#' @param parquet_dir le chemin vers le dossier ou sera cree le ou les dossiers 
+#' qui contiendront les fichiers .parquet
+#' @param chunk_size le nombre de lignes des chunks qui constitueront le fichier 
+#' .parquet
 #' 
 #' @return 
-#' La fonction cree un dossier du meme nom que le fichier .sas7bdat qui contiendra
-#' les fichiers .parquet crees (si le fichier .sas traite est compose de 100 lignes 
-#' et que la taille des chunks est de 10, alors il y aura 10 fichiers .parquet)
+#' La fonction cree un dossier du meme nom que le fichier .sas7bdat qui 
+#' contiendra les fichiers .parquet crees (si le fichier .sas traite est compose
+#' de 100 lignes et que la taille des chunks est de 10, alors il y aura 10 
+#' fichiers .parquet)
 #' 
 #' @examples
 #' convert_sas_parquet(sas_files = c("test/parquet/data1.sas7bdat", 
@@ -41,7 +45,7 @@ convert_sas_parquet <- function(sas_files,
     # Boucle principale
     repeat {
       
-      start_time <- Sys.time() # ______________________________________________
+      start_time <- Sys.time()
       
       # Lecture d'un chunk du fichier .sas7bdat
       chunk <- tryCatch(
@@ -55,7 +59,7 @@ convert_sas_parquet <- function(sas_files,
       output <- file.path(output_dir, paste0(sas_name, "_chunk", sprintf("%02d", count), ".parquet"))
       write_parquet(chunk, output, compression = "snappy")
       
-      end_time <- Sys.time() # ________________________________________________
+      end_time <- Sys.time()
       
       # Calcul du temps de calcul et d'ecriture du chunk
       chunk_time <- as.numeric(end_time - start_time, units = "secs")

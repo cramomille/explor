@@ -25,7 +25,7 @@ calcul_tvma <- function(dataframes,
   }
   
   # Initialisation du data.frame final avec la colonne identifiant du premier data.frame
-  df_resultat <- dataframes[[1]][, id, drop = FALSE]
+  result <- dataframes[[1]][, id, drop = FALSE]
   
   # Parcour des paires consecutives de data.frames
   for (i in seq_along(dataframes)[-length(dataframes)]) {
@@ -49,13 +49,13 @@ calcul_tvma <- function(dataframes,
       return(taux)
     })
     
-    # Convertir en dataframe
+    # Convertion en data.frame
     df_tvam <- as.data.frame(tvam)
     colnames(df_tvam) <- paste0("tvam_", annee1, "_", annee2, "_", names(df1)[!names(df1) %in% id])
     
-    # Ajouter au dataframe final
-    df_resultat <- cbind(df_resultat, df_tvam)
+    # Ajout au dataframe final
+    result <- cbind(result, df_tvam)
   }
   
-  return(df_resultat)
+  return(result)
 }

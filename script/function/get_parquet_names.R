@@ -6,7 +6,7 @@
 #' @param dir le chemin vers le fichier .parquet ou le dossier qui contient les 
 #' chunks .parquet
 #' 
-#' @return 
+#' @return
 #' La fonction creer un vecteur
 #' 
 #' @examples

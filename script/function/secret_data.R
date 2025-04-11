@@ -1,6 +1,7 @@
 #' @title Secretisation d'un tableau
 #' @description
-#' Cette fonction permet de respecter le secret statistique sur des tableaux de donnees
+#' Cette fonction permet de respecter le secret statistique sur des tableaux de
+#' donnees
 #' 
 #' Sur la ligne, toutes les colonnes comprennent une valeur >= a la limite :
 #' pas de secretisation des valeurs
@@ -17,17 +18,17 @@
 #'  0   64    0    0    0    0    0
 #' NA   NA   NA   NA   NA   NA   NA
 #'
-#' Sur la ligne, toutes les colonnes sauf une comprennent une valeur >= a la limite :
-#' secretisation de cette valeur et de la deuxieme plus petite valeur
+#' Sur la ligne, toutes les colonnes sauf une comprennent une valeur >= a la
+#' limite : secretisation de cette valeur et de la deuxieme plus petite valeur
 #' 25   64   15   32   24   84   53
 #' 25   64   NA   32   NA   84   53
 #' 
 #' @param data le tableau de donnees
 #' @param vars le vecteur avec l'indice des variables a traiter dans 'data'
 #' @param limit la valeur de l'effectif minimum de la secretisation
-#' @param unique le boleen pour definir si l'on considere que l'ensemble des colonnes 
-#' a secretiser forment ou non un tout ('TRUE'  si toutes les colonnes composent un tout
-#' et 'FALSE' si les colonnes ne composent pas un tout)
+#' @param unique le boleen pour definir si l'on considere que l'ensemble des
+#' colonnes a secretiser forment ou non un tout ('TRUE'  si toutes les colonnes
+#' composent un tout et 'FALSE' si les colonnes ne composent pas un tout)
 #' 
 #' @return 
 #' La fonction renvoie un data.frame

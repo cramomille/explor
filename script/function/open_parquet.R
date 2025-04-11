@@ -9,7 +9,7 @@
 #' @param cols le vecteur avec le ou les noms des colonnes du fichier .parquet 
 #' que l'on souhaite conserver
 #' 
-#' @return 
+#' @return
 #' La fonction creer un objet list contenant des objets data.frame
 #' 
 #' @examples

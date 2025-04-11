@@ -65,20 +65,6 @@ data2 <- result[[2]]
 data3 <- result[[3]]
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ###############################################################################
 ############################################################ SECRET STATISTIQUE
 
@@ -100,27 +86,28 @@ test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 ###############################################################################
 ######################################## TEST MAILLAGE COMPOSITE D'ALIETTE ROUX
 
-AR01 <- load("input/mar/donnees/AR01_geog_constante.RData")
-AR02 <- load("input/mar/donnees/AR02_maille_IRISr.RData")
+load("input/mar/donnees/AR01_geog_constante.RData")
+load("input/mar/donnees/AR02_maille_IRISr.RData")
+
+# Reprojection des DROM
+iris <- create_fond(fond = sf.irisf, id = "IRISF_CODE")
+
+# Regroupement des iris en communes
+com <- aggreg_fond(tabl = d.irisf.pass,
+                   fond = iris,
+                   id = c("IRISF_CODE", "IRISF_CODE"), 
+                   maille = "COMF_CODE")
 
 
 
-
-
-
-
-
-
-# Ouverture du fichier avec les irisr
-iris <- st_read("input/mar/donnees/shapefiles/AR02_sf_irisr.shp")
+iris <- sf.irisr
 iris <- st_as_sf(iris)
 iris <- st_transform(iris, 2154)
 
 iris <- iris[, c(1,2,5,6,7)]
 colnames(iris) <- c("IRIS_CODE", "IRIS_LIB", "COMF_CODE", "COMF_LIB", "P21_POP", "geometry")
-
-# Ouverture du fichier avec toutes les iris pour ajouter Mayotte
-mayo <- st_read("input/mar/donnees/shapefiles/AR01_sf_irisf.shp")
+ 
+mayo <- sf.irisf
 mayo <- st_as_sf(mayo)
 mayo <- st_transform(mayo, 2154)
 
@@ -138,14 +125,12 @@ colnames(mayo) <- c("IRIS_CODE", "IRIS_LIB", "COMF_CODE", "COMF_LIB", "P21_POP",
 # Collage des deux data.frames
 fond <- rbind(iris, mayo)
 
-# Utilisation de la fonction pour deplacer les geometries des DROM
-fond_created <- create_fond(fond)
-
-# Export
-st_write(fond_created, "output/irisar.gpkg")
+# Reprojection des DROM
+irisar <- create_fond(fond = fond, id = "IRIS_CODE")
 
 
-
+st_write(fond, "fond.gpkg")
+st_write(irisar, "irisar.gpkg")
 
 
 
@@ -161,22 +146,6 @@ st_write(fond_created, "output/irisar.gpkg")
 
 
 
-library(sf)
-library(readxl)
-
-dir_aav <- "input/aav/AAV2020_au_01-01-2023.xlsx"
-dir_geo <- "output/irisar.gpkg"
-
-# Lecture des fichiers aav
-aav_typ <- read_xlsx(dir_aav, sheet = 1, skip = 5)
-aav_com <- read_xlsx(dir_aav, sheet = 2, skip = 5)
-
-aav <- merge(aav_com[, -c(2)], aav_typ[, -c(2)], by = "AAV2020", all.x = TRUE)
-
-# Lecture des couches geographiques
-geo <- st_read(dir_geo)
-
-test <- merge(geo, aav, by.x = "COMF_CODE", by.y = "CODGEO", all.x = TRUE)
 
 
 
@@ -191,33 +160,38 @@ test <- merge(geo, aav, by.x = "COMF_CODE", by.y = "CODGEO", all.x = TRUE)
 
 
 
-# Ajout des arrondissements aux aav
-arr_aav <- aav[grepl("75056|13055|69123", aav$CODGEO), ]
-arr_geo <- geo[grepl("^751|^132|^6938", geo$COMF_CODE), ]
-
-arr_geo <- arr_geo[, c(1)]
-arr_geo$geometry <- NULL
-
-arr_aav$id <- substr(arr_aav$CODGEO, 1, 2)
-arr_geo$id <- substr(arr_geo$CODGEO, 1, 2)
-
-x <- merge(arr_aav[, -c(2)], arr_geo, by = "id")
-x <- x[, -c(1)]
-
-x <- x[, colnames(aav)]
-
-# Fichier des aav avec arrondissements
-aav_join <- rbind(aav, x)
-
-write.csv(aav_join, "aav_2020.csv")
-
-# # Fichier des aav avec une geometrie
-# y <- merge(com, aav_join, by = "CODGEO")
-# 
-# # Agregation des geometries en aav
-# z <- aggregate(y, by = list(y$AAV2020), FUN = function(x) x[1])
-# z <- z[, -c(1)]
-# 
-# st_write(z, "aav_2020.gpkg")
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# install.packages("devtools")
+devtools::install_github("alietteroux/subwork")
+
+library(subwork)
+
+# importer les données "FT810" dans un dataframe nommé "FT810.data"
+FT810.data <- import(code = "FT810", type = "data")
+
+# FT711.data pour echelle com
+# base to salariers
+
+
+
+data <- aggreg_data(tabl = d.irisR.pass,
+                    data = FT810.data, 
+                    id = c("IRIS"))
