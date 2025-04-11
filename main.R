@@ -89,10 +89,11 @@ test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 load("input/mar/donnees/AR01_geog_constante.RData")
 load("input/mar/donnees/AR02_maille_IRISr.RData")
 
-# Reprojection des DROM
+# st_write(sf.irisr.d, "irisd.gpkg")
+
+# Reprojection des DROM dans les geographies a facon
 iris <- create_fond(fond = sf.irisf, id = "IRISF_CODE")
 
-# Regroupement des iris en communes
 com <- aggreg_fond(tabl = d.irisf.pass,
                    fond = iris,
                    id = c("IRISF_CODE", "IRISF_CODE"), 
