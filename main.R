@@ -86,10 +86,36 @@ test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 ###############################################################################
 ######################################## TEST MAILLAGE COMPOSITE D'ALIETTE ROUX
 
-load("input/mar/donnees/AR01_geog_constante.RData")
-load("input/mar/donnees/AR02_maille_IRISr.RData")
+sf_comf <- st_read(paste0("https://sharedocs.huma-num.fr/wl/?id=xuOVdkak43uv0V4wcbi4QL1AjqJVIjKT", "&mode=grid&download=1"))
+sf_irisf <- st_read(paste0("https://sharedocs.huma-num.fr/wl/?id=NWLnoKioP7mdamWjnRl5GfkWsq9CUdzD", "&mode=grid&download=1"))
+sf_irisrd <- st_read(paste0("https://sharedocs.huma-num.fr/wl/?id=QpH4uxaOcEMEc0u1mb05tRRTuXHs7VQI", "&mode=grid&download=1"))
+sf_irisrs <- st_read(paste0("https://sharedocs.huma-num.fr/wl/?id=vT4HOEYWJ5BiPxwoEDYrSG42woMrNw5D", "&mode=grid&download=1"))
 
-# st_write(sf.irisr.d, "irisd.gpkg")
+pass_comf <- read.csv(paste0("https://sharedocs.huma-num.fr/wl/?id=96yNI32NYbEjogu3lleLp52uW8gpEWqW", "&mode=grid&download=1"))
+pass_irisf <- read.csv(paste0("https://sharedocs.huma-num.fr/wl/?id=WYxbO42GJ8bHATDGH87MZ2wmSWNq1iv5", "&mode=grid&download=1"))
+pass_irisr <- read.csv(paste0("https://sharedocs.huma-num.fr/wl/?id=4M74RRTg22Ewvy49YhJsEXXyjyncuNVU", "&mode=grid&download=1"))
+
+app_comf <- read.csv(paste0("https://sharedocs.huma-num.fr/wl/?id=lQKxMDHb1zWmh4zvK9oC3ll8LJdY1GrA", "&mode=grid&download=1"))
+app_irisr <- read.csv(paste0("https://sharedocs.huma-num.fr/wl/?id=wgwMU6hEhn42zAIZcmu1Q95aiIgL8VQP", "&mode=grid&download=1"))
+
+
+fond <- sf_irisf
+col <- "COMF_CODE"
+
+test <- aggregate(fond,
+                 by = list(fond[[col]]),
+                 FUN = function(x) x[1])
+
+
+
+
+
+
+
+
+
+
+
 
 # Reprojection des DROM dans les geographies a facon
 iris <- create_fond(fond = sf.irisf, id = "IRISF_CODE")
@@ -132,45 +158,6 @@ irisar <- create_fond(fond = fond, id = "IRIS_CODE")
 
 st_write(fond, "fond.gpkg")
 st_write(irisar, "irisar.gpkg")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
