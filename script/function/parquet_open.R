@@ -15,9 +15,9 @@
 #' @examples
 #' data <- parquet_open(dir = "test/parquet/export/",
 #'                      file = c("data1", "data2", "data3_chunk01.parquet")
-#'                      col = list(c("id", "ID"), 
-#'                                 c("value1", "VALUE1"), 
-#'                                 c("value2", "VALUE2")))
+#'                      cols = list(c("id", "ID"), 
+#'                                  c("value1", "VALUE1"), 
+#'                                  c("value2", "VALUE2")))
 
 library(arrow)
 library(duckdb)

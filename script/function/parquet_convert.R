@@ -3,10 +3,10 @@
 #' Cette fonction permet de creer des fichiers .parquet a partir de fichiers 
 #' .sas7bdat
 #' 
-#' @param sas_files le vecteur avec le chemin vers le ou les fichiers .sas7bdat
-#' @param parquet_dir le chemin vers le dossier ou sera cree le ou les dossiers 
-#' qui contiendront les fichiers .parquet
-#' @param chunk_size le nombre de lignes des chunks qui constitueront le fichier 
+#' @param sas le vecteur avec les chemins vers les fichiers .sas7bdat
+#' @param parquet le chemin vers le dossier ou sera cree les dossiers qui 
+#' contiendront les fichiers .parquet
+#' @param chunk le nombre de lignes des chunks qui constitueront le fichier 
 #' .parquet
 #' 
 #' @return 
@@ -16,23 +16,23 @@
 #' fichiers .parquet)
 #' 
 #' @examples
-#' parquet_convert(sas_files = c("test/parquet/data1.sas7bdat", 
-#'                               "test/parquet/data2.sas7bdat"), 
-#'                 parquet_dir = "test/parquet/export/",
-#'                 chunk_size = 100000)
+#' parquet_convert(sas = c("test/parquet/data1.sas7bdat", 
+#'                         "test/parquet/data2.sas7bdat"), 
+#'                 parquet = "test/parquet/export/",
+#'                 chunk = 100000)
 
 library(haven)
 library(arrow)
 
-parquet_convert <- function(sas_files,
-                            parquet_dir,
-                            chunk_size = 1000000) {
+parquet_convert <- function(sas,
+                            parquet,
+                            chunk = 1000000) {
   
-  for (x in sas_files) {
+  for (x in sas) {
     sas_name <- sub("\\.sas7bdat$", "", basename(x))
     
     # Creation d'un dossier specifique pour chaque fichier .sas7bdat
-    output_dir <- file.path(parquet_dir, sas_name)
+    output_dir <- file.path(parquet, sas_name)
     if (!dir.exists(output_dir)) {
       dir.create(output_dir, recursive = TRUE)
     }
