@@ -13,17 +13,17 @@
 #' La fonction creer un objet list contenant des objets data.frame
 #' 
 #' @examples
-#' data <- open_parquets(dir = "test/parquet/export/",
-#'                       file = c("data1", "data2", "data3_chunk01.parquet")
-#'                       col = list(c("id", "ID"), 
-#'                                  c("value1", "VALUE1"), 
-#'                                  c("value2", "VALUE2")))
+#' data <- parquet_open(dir = "test/parquet/export/",
+#'                      file = c("data1", "data2", "data3_chunk01.parquet")
+#'                      col = list(c("id", "ID"), 
+#'                                 c("value1", "VALUE1"), 
+#'                                 c("value2", "VALUE2")))
 
 library(arrow)
 library(duckdb)
 library(dplyr)
 
-open_parquet <- function(dir, 
+parquet_open <- function(dir, 
                          file, 
                          cols) {
   

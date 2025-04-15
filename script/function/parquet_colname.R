@@ -10,13 +10,13 @@
 #' La fonction creer un vecteur
 #' 
 #' @examples
-#' names <- get_parquet_names(dir = "test/parquet/export/data1/")
+#' names <- parquet_colname(dir = "test/parquet/export/data1/")
 
 library(arrow)
 library(duckdb)
 library(dplyr)
 
-get_parquet_names <- function(dir) {
+parquet_colname <- function(dir) {
   
   # Creation de la connexion a DuckDB pour executer des requetes SQL
   con <- dbConnect(duckdb())

@@ -10,9 +10,9 @@
 #' 
 
 # Fonction pour calculer le TVMA entre deux data.frames identiques 
-calcul_tvma <- function(dataframes, 
-                        annees, 
-                        id) {
+calc_tvma <- function(dataframes, 
+                      annees, 
+                      id) {
   
   # Verification que le nombre de data.frames correspond au nombre d'annees donnees
   if (length(dataframes) != length(annees)) {

@@ -16,17 +16,17 @@
 #' fichiers .parquet)
 #' 
 #' @examples
-#' convert_sas_parquet(sas_files = c("test/parquet/data1.sas7bdat", 
-#'                                   "test/parquet/data2.sas7bdat"), 
-#'                     parquet_dir = "test/parquet/export/",
-#'                     chunk_size = 100000)
+#' parquet_convert(sas_files = c("test/parquet/data1.sas7bdat", 
+#'                               "test/parquet/data2.sas7bdat"), 
+#'                 parquet_dir = "test/parquet/export/",
+#'                 chunk_size = 100000)
 
 library(haven)
 library(arrow)
 
-convert_sas_parquet <- function(sas_files,
-                                parquet_dir,
-                                chunk_size = 1000000) {
+parquet_convert <- function(sas_files,
+                            parquet_dir,
+                            chunk_size = 1000000) {
   
   for (x in sas_files) {
     sas_name <- sub("\\.sas7bdat$", "", basename(x))
