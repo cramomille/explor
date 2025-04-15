@@ -21,6 +21,7 @@
 #'                 parquet = "test/parquet/export/",
 #'                 chunk = 100000)
 
+
 library(haven)
 library(arrow)
 
@@ -48,16 +49,16 @@ parquet_convert <- function(sas,
       start_time <- Sys.time()
       
       # Lecture d'un chunk du fichier .sas7bdat
-      chunk <- tryCatch(
-        read_sas(x, skip = row, n_max = chunk_size),
+      c <- tryCatch(
+        read_sas(x, skip = row, n_max = chunk),
         error = function(e) NULL
       )
       
-      if (is.null(chunk) || nrow(chunk) == 0) break
+      if (is.null(c) || nrow(c) == 0) break
       
       # Ecriture du fichier .parquet dans le dossier specifique au fichier .sas7bdat
       output <- file.path(output_dir, paste0(sas_name, "_chunk", sprintf("%02d", count), ".parquet"))
-      write_parquet(chunk, output, compression = "snappy")
+      write_parquet(c, output, compression = "snappy")
       
       end_time <- Sys.time()
       
@@ -70,7 +71,7 @@ parquet_convert <- function(sas,
       s <- round(chunk_time %% 60)
       
       # Mise a jour de la premiere ligne du prochain chunk
-      row <- row + nrow(chunk)
+      row <- row + nrow(c)
       row_text <- formatC(row, format = "d", big.mark = " ")
       
       # Message d'avancement du traitement du fichier .sas7bdat

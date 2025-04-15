@@ -4,16 +4,14 @@
 #                                                                antoine beroud
 #                                                                  janvier 2025
 
-f <- list.files("script/function",
-                pattern = "\\.R$",
-                full.names = TRUE)
-
-invisible(sapply(f, source))
-
+invisible(sapply(list.files("script/function", 
+                            pattern = "\\.R$", 
+                            full.names = TRUE), 
+                 source))
 
 library(sf)
 library(asf)
-
+# options(error = NULL)
 
 ###############################################################################
 ############################################ CREATION DE FICHIERS .PARQUET TEST
@@ -39,23 +37,23 @@ write_sas(df, "output/sas/data1.sas7bdat")
 write_sas(DF, "output/sas/data2.sas7bdat")
 
 # Transformation de fichiers .sas7bdat en .parquet
-convert_sas_parquet(sas_files = c("output/sas/data1.sas7bdat",
-                                  "output/sas/data2.sas7bdat"),
-                    parquet_dir = "output/parquet/",
-                    chunk_size = 100000)
+parquet_convert(sas = c("output/sas/data1.sas7bdat",
+                        "output/sas/data2.sas7bdat"),
+                parquet = "output/parquet/",
+                chunk = 100000)
 
 
 ###############################################################################
 ########################################### OUVERTURE DE FICHIERS .PARQUET TEST
 
 # recuperation des noms d'un fichier parquet
-names <- get_parquet_names(dir = "output/parquet/data1")
-names <- get_parquet_names(dir = "output/parquet/data2")
-names <- get_parquet_names(dir = "output/parquet/data3_chunk01.parquet")
+names <- parquet_colname(dir = "output/parquet/data1")
+names <- parquet_colname(dir = "output/parquet/data2")
+names <- parquet_colname(dir = "output/parquet/data3.parquet")
 
 # Ouverture de fichiers .parquet
-result <- open_parquet(dir = "output/parquet/",
-                       file = c("data1", "data2", "data3_chunk01.parquet"),
+result <- parquet_open(dir = "output/parquet/",
+                       file = c("data1", "data2", "data3.parquet"),
                        cols = list(c("id", "ID"),
                                    c("value1", "VALUE1"),
                                    c("value2", "VALUE2")))
@@ -86,50 +84,76 @@ test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 ###############################################################################
 ######################################## TEST MAILLAGE COMPOSITE D'ALIETTE ROUX
 
+# Ouverture du fichier des iris
+mar <- asf_mar()
 
+# Selection des iris
+iris <- mar$geom$irisrs
+iris <- iris[, c(1,2,7)]
+colnames(iris) <- c("irisrs_code", "irisrs_lib", "p21_pop", "geometry")
+st_geometry(iris) <- "geometry"
 
-
-# Reprojection des DROM dans les geographies a facon
-iris <- create_fond(fond = sf.irisf, id = "IRISF_CODE")
-
-com <- aggreg_fond(tabl = d.irisf.pass,
-                   fond = iris,
-                   id = c("IRISF_CODE", "IRISF_CODE"), 
-                   maille = "COMF_CODE")
-
-
-
-iris <- sf.irisr
-iris <- st_as_sf(iris)
-iris <- st_transform(iris, 2154)
-
-iris <- iris[, c(1,2,5,6,7)]
-colnames(iris) <- c("IRIS_CODE", "IRIS_LIB", "COMF_CODE", "COMF_LIB", "P21_POP", "geometry")
- 
-mayo <- sf.irisf
-mayo <- st_as_sf(mayo)
-mayo <- st_transform(mayo, 2154)
-
+# Selection des iris de Mayotte
+mayo <- mar$geom$irisf
 mayo <- mayo[grepl("^976", mayo$IRISF_CODE), ]
-
-mayo$COMF_LIB <- NA
 mayo$P21_POP <- NA
-
-mayo$COMF_LIB <- as.numeric(mayo$COMF_LIB)
 mayo$P21_POP <- as.numeric(mayo$P21_POP)
+mayo <- mayo[, c(1,2,7)]
+colnames(mayo) <- c("irisrs_code", "irisrs_lib", "p21_pop", "geometry")
+st_geometry(mayo) <- "geometry"
 
-mayo <- mayo[, c(1,2,4,7,8)]
-colnames(mayo) <- c("IRIS_CODE", "IRIS_LIB", "COMF_CODE", "COMF_LIB", "P21_POP", "geometry")
-
-# Collage des deux data.frames
+# Collage des deux objets sf/data.frames
 fond <- rbind(iris, mayo)
 
-# Reprojection des DROM
-irisar <- create_fond(fond = fond, id = "IRIS_CODE")
+
+# Repositionnement des geometries des DROM
+fond <- asf_drom(tabl, id = "irisrs_code", epsg = "aa")
 
 
-st_write(fond, "fond.gpkg")
-st_write(irisar, "irisar.gpkg")
+tabl <- mar$pass$irisr
+
+
+data <- read.csv("input/csp_2020.csv")
+
+
+
+
+st_as_sf(data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

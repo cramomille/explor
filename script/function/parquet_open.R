@@ -22,6 +22,7 @@
 library(arrow)
 library(duckdb)
 library(dplyr)
+library(dbplyr)
 
 parquet_open <- function(dir, 
                          file, 
