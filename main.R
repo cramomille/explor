@@ -11,6 +11,7 @@ invisible(sapply(list.files("script/function",
 
 library(sf)
 library(asf)
+library(mapsf)
 # options(error = NULL)
 
 ###############################################################################
@@ -81,6 +82,23 @@ y <- dput(x) # test
 test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 
 
+# 
+# # install.packages("devtools")
+# devtools::install_github("alietteroux/subwork")
+# 
+# library(subwork)
+# 
+# # importer les données "FT810" dans un dataframe nommé "FT810.data"
+# FT810.data <- import(code = "FT810", type = "data")
+# 
+# # FT711.data pour echelle com
+# # base to salariers
+# 
+# 
+# 
+# data <- aggreg_data(tabl = d.irisR.pass,
+#                     data = FT810.data, 
+#                     id = c("IRIS"))
 ###############################################################################
 ######################################## TEST MAILLAGE COMPOSITE D'ALIETTE ROUX
 
@@ -103,96 +121,30 @@ colnames(mayo) <- c("irisrs_code", "irisrs_lib", "p21_pop", "geometry")
 st_geometry(mayo) <- "geometry"
 
 # Collage des deux objets sf/data.frames
-fond <- rbind(iris, mayo)
-
+f <- rbind(iris, mayo)
 
 # Repositionnement des geometries des DROM
-fond <- asf_drom(tabl, id = "irisrs_code", epsg = "aa")
+fond <- asf_drom(iris, id = "irisrs_code")
+mf_map(fond)
+fond <- asf_drom(f, id = "irisrs_code")
+mf_map(fond)
 
 
-tabl <- mar$pass$irisr
+# tabl <- mar$pass$irisr
+# 
+# data <- read.csv("input/csp_2020.csv")
 
 
-data <- read.csv("input/csp_2020.csv")
+x <- c(1,2,3,4,5)
+max(x)
 
+length(fond)
 
 
 
-st_as_sf(data)
 
+if (is.numeric(vars)) {
+  vars <- names(data)[vars]
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# install.packages("devtools")
-devtools::install_github("alietteroux/subwork")
-
-library(subwork)
-
-# importer les données "FT810" dans un dataframe nommé "FT810.data"
-FT810.data <- import(code = "FT810", type = "data")
-
-# FT711.data pour echelle com
-# base to salariers
-
-
-
-data <- aggreg_data(tabl = d.irisR.pass,
-                    data = FT810.data, 
-                    id = c("IRIS"))
+data <- data[, c(id[2], vars)]
