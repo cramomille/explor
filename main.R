@@ -12,7 +12,9 @@ invisible(sapply(list.files("script/function",
 library(sf)
 library(asf)
 library(mapsf)
-# options(error = NULL)
+
+options(error = NULL)
+
 
 ###############################################################################
 ############################################ CREATION DE FICHIERS .PARQUET TEST
@@ -111,40 +113,42 @@ iris <- iris[, c(1,2,7)]
 colnames(iris) <- c("irisrs_code", "irisrs_lib", "p21_pop", "geometry")
 st_geometry(iris) <- "geometry"
 
-# Selection des iris de Mayotte
-mayo <- mar$geom$irisf
-mayo <- mayo[grepl("^976", mayo$IRISF_CODE), ]
-mayo$P21_POP <- NA
-mayo$P21_POP <- as.numeric(mayo$P21_POP)
-mayo <- mayo[, c(1,2,7)]
-colnames(mayo) <- c("irisrs_code", "irisrs_lib", "p21_pop", "geometry")
-st_geometry(mayo) <- "geometry"
-
-# Collage des deux objets sf/data.frames
-f <- rbind(iris, mayo)
+# # Selection des iris de Mayotte
+# mayo <- mar$geom$irisf
+# mayo <- mayo[grepl("^976", mayo$IRISF_CODE), ]
+# mayo$P21_POP <- NA
+# mayo$P21_POP <- as.numeric(mayo$P21_POP)
+# mayo <- mayo[, c(1,2,7)]
+# colnames(mayo) <- c("irisrs_code", "irisrs_lib", "p21_pop", "geometry")
+# st_geometry(mayo) <- "geometry"
+# 
+# # Collage des deux objets sf/data.frames
+# fond <- rbind(iris, mayo)
 
 # Repositionnement des geometries des DROM
 fond <- asf_drom(iris, id = "irisrs_code")
-mf_map(fond)
-fond <- asf_drom(f, id = "irisrs_code")
-mf_map(fond)
-
-
-# tabl <- mar$pass$irisr
-# 
-# data <- read.csv("input/csp_2020.csv")
-
-
-x <- c(1,2,3,4,5)
-max(x)
-
-length(fond)
 
 
 
+table_de_passage <- mar$pass$irisr
+data_exemple <- mar$data$csp
 
-if (is.numeric(vars)) {
-  vars <- names(data)[vars]
-}
+data_aggreg <- asf_data(tabl = table_de_passage, 
+                        data = data_exemple, 
+                        vars = c(4:13), 
+                        funs = c("sum"), 
+                        id = c("IRIS_CODE", "IRIS"), 
+                        maille = "IRISrS_CODE")
 
-data <- data[, c(id[2], vars)]
+
+tabl_de_passage <- mar$pass$irisr
+fond_de_test <- mar$geom$irisf
+
+result <- asf_fond(tabl = tabl_de_passage,
+                   fond = fond_de_test,
+                   id = c("IRISF_CODE", "IRISF_CODE"),
+                   maille = "IRISrS_CODE")
+
+
+
+
