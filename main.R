@@ -128,6 +128,20 @@ st_geometry(iris) <- "geometry"
 # Repositionnement des geometries des DROM
 fond <- asf_drom(iris, id = "irisrs_code")
 
+zoom <- asf_zoom(fond = fond, 
+                 villes = c(10, 54))
+
+zooms <- zoom$zooms
+
+mf_map(zooms)
+
+
+
+
+
+
+
+
 
 
 table_de_passage <- mar$pass$irisr
@@ -135,7 +149,7 @@ data_exemple <- mar$data$csp
 
 data_aggreg <- asf_data(tabl = table_de_passage, 
                         data = data_exemple, 
-                        vars = c(4:13), 
+                        vars = c(4:10), 
                         funs = c("sum"), 
                         id = c("IRIS_CODE", "IRIS"), 
                         maille = "IRISrS_CODE")
