@@ -128,12 +128,6 @@ st_geometry(iris) <- "geometry"
 # Repositionnement des geometries des DROM
 fond <- asf_drom(iris, id = "irisrs_code")
 
-zoom <- asf_zoom(fond = fond, 
-                 villes = c(10, 54))
-
-zooms <- zoom$zooms
-
-mf_map(zooms)
 
 
 
@@ -144,25 +138,31 @@ mf_map(zooms)
 
 
 
-table_de_passage <- mar$pass$irisr
-data_exemple <- mar$data$csp
 
-data_aggreg <- asf_data(tabl = table_de_passage, 
-                        data = data_exemple, 
+
+
+
+
+data <- mar$data$csp
+fond <- mar$geom$irisf
+tabl <- mar$pass$irisr
+
+data_aggreg <- asf_data(tabl, data, 
                         vars = c(4:10), 
                         funs = c("sum"), 
                         id = c("IRIS_CODE", "IRIS"), 
                         maille = "IRISrS_CODE")
 
+fond_aggreg <- asf_fond(tabl, fond, 
+                        id = c("IRISF_CODE", "IRISF_CODE"), 
+                        maille = "IRISrS_CODE") 
 
-tabl_de_passage <- mar$pass$irisr
-fond_de_test <- mar$geom$irisf
+z <- asf_zoom(fond_aggreg, 
+                   villes = c(1:8))
 
-result <- asf_fond(tabl = tabl_de_passage,
-                   fond = fond_de_test,
-                   id = c("IRISF_CODE", "IRISF_CODE"),
-                   maille = "IRISrS_CODE")
+zoom <- z$zoom
+label <- z$label
 
-
-
+fondata <- asf_fondata(data_aggreg, fond_aggreg, zoom, 
+                       id = c("IRISrS_CODE", "IRISrS_CODE"))
 
