@@ -69,7 +69,7 @@ data3 <- result[[3]]
 ###############################################################################
 ############################################################ SECRET STATISTIQUE
 
-# Data.frame d'exemple
+# Creation d'un data.frame d'exemple
 x <- data.frame(
   commune = c("com1", "com2", "com3", "com4", "com5"),
   tot = c(100, 100, 50, 60, 20),
@@ -79,12 +79,10 @@ x <- data.frame(
   ca4 = c(40, 40, 10, 20, 20)
 )
 
-y <- dput(x) # test
+y <- dput(x) # test de cette fonction
 
 test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 
-
-# 
 # # install.packages("devtools")
 # devtools::install_github("alietteroux/subwork")
 # 
@@ -101,14 +99,45 @@ test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 # data <- aggreg_data(tabl = d.irisR.pass,
 #                     data = FT810.data, 
 #                     id = c("IRIS"))
+
+
 ###############################################################################
 ######################################## TEST MAILLAGE COMPOSITE D'ALIETTE ROUX
 
 mar <- asf_mar()
 
-data <- mar$data$csp
+
+# Fond de carte ---------------------------------------------------------------
 fond <- mar$geom$irisf
 tabl <- mar$pass$irisr
+
+# Repositionnement des DROM
+fond <- asf_drom(fond, 
+                 id = "IRISF_CODE")
+
+# Creation des limites departementales
+dep <- asf_dep(fond, 
+               id = "IRISF_CODE")
+
+# Fond de carte specifique
+fond_aggreg <- asf_fond(tabl, 
+                        fond, 
+                        id = c("IRISF_CODE", "IRISF_CODE"), 
+                        maille = "IRISrS_CODE") 
+
+# Creation de zooms
+z <- asf_zoom(fond_aggreg, 
+              villes = c(1:8))
+
+zoom <- z$zoom
+label <- z$label
+
+# Simplification des geometries du fond de carte
+fond_aggreg <- asf_simplify(fond_aggreg)
+
+
+# Data ------------------------------------------------------------------------
+data <- mar$data$csp
 
 data_aggreg <- asf_data(tabl, data, 
                         vars = c(4:13), 
@@ -116,42 +145,12 @@ data_aggreg <- asf_data(tabl, data,
                         id = c("IRIS_CODE", "IRIS"), 
                         maille = "IRISrS_CODE")
 
-fond <- asf_drom(fond, 
-                 id = "IRISF_CODE")
 
-dep <- asf_dep(fond,
-               id = "IRISF_CODE")
-
-dep_border <- mf_get_borders(dep)
-
-
-mf_map(dep_border)
-
-
-st_write(dep_border, "dep.gpkg")
-
-
-
-
-
-
-
-fond_aggreg <- asf_fond(tabl, fond, 
-                        id = c("IRISF_CODE", "IRISF_CODE"), 
-                        maille = "IRISrS_CODE") 
-
-z <- asf_zoom(fond_aggreg, 
-              villes = c(1:8))
-
-zoom <- z$zoom
-label <- z$label
-
-fond_aggreg <- asf_simplify(fond_aggreg)
-
+# Jointure --------------------------------------------------------------------
 fondata <- asf_fondata(data_aggreg, fond_aggreg, zoom, 
                        id = c("IRISrS_CODE", "IRISrS_CODE"))
 
-map_q(fondata, 
+map_q(fondata,
       tot = "C20_POP15P", 
       var = "C20_POP15P_CS3", 
       breaks = "q6",
