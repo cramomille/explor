@@ -104,8 +104,81 @@ test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 ###############################################################################
 ######################################## TEST MAILLAGE COMPOSITE D'ALIETTE ROUX
 
-# Ouverture du fichier des iris
 mar <- asf_mar()
+
+data <- mar$data$csp
+fond <- mar$geom$irisf
+tabl <- mar$pass$irisr
+
+data_aggreg <- asf_data(tabl, data, 
+                        vars = c(4:13), 
+                        funs = c("sum"), 
+                        id = c("IRIS_CODE", "IRIS"), 
+                        maille = "IRISrS_CODE")
+
+fond <- asf_drom(fond, 
+                 id = "IRISF_CODE")
+
+dep <- asf_dep(fond,
+               id = "IRISF_CODE")
+
+dep_border <- mf_get_borders(dep)
+
+
+mf_map(dep_border)
+
+
+st_write(dep_border, "dep.gpkg")
+
+
+
+
+
+
+
+fond_aggreg <- asf_fond(tabl, fond, 
+                        id = c("IRISF_CODE", "IRISF_CODE"), 
+                        maille = "IRISrS_CODE") 
+
+z <- asf_zoom(fond_aggreg, 
+              villes = c(1:8))
+
+zoom <- z$zoom
+label <- z$label
+
+fond_aggreg <- asf_simplify(fond_aggreg)
+
+fondata <- asf_fondata(data_aggreg, fond_aggreg, zoom, 
+                       id = c("IRISrS_CODE", "IRISrS_CODE"))
+
+map_q(fondata, 
+      tot = "C20_POP15P", 
+      var = "C20_POP15P_CS3", 
+      breaks = "q6",
+      zoomlabel = label)
+
+
+map_bi(fondata, 
+       tots = c("C20_POP15P", "C20_POP15P"), 
+       vars = c("C20_POP15P_CS3", "C20_POP15P_CS6"))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Selection des iris
 iris <- mar$geom$irisrs
@@ -127,42 +200,3 @@ st_geometry(iris) <- "geometry"
 
 # Repositionnement des geometries des DROM
 fond <- asf_drom(iris, id = "irisrs_code")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-data <- mar$data$csp
-fond <- mar$geom$irisf
-tabl <- mar$pass$irisr
-
-data_aggreg <- asf_data(tabl, data, 
-                        vars = c(4:10), 
-                        funs = c("sum"), 
-                        id = c("IRIS_CODE", "IRIS"), 
-                        maille = "IRISrS_CODE")
-
-fond_aggreg <- asf_fond(tabl, fond, 
-                        id = c("IRISF_CODE", "IRISF_CODE"), 
-                        maille = "IRISrS_CODE") 
-
-z <- asf_zoom(fond_aggreg, 
-                   villes = c(1:8))
-
-zoom <- z$zoom
-label <- z$label
-
-fondata <- asf_fondata(data_aggreg, fond_aggreg, zoom, 
-                       id = c("IRISrS_CODE", "IRISrS_CODE"))
-
