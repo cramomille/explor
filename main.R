@@ -150,18 +150,194 @@ data_aggreg <- asf_data(tabl, data,
 fondata <- asf_fondata(data_aggreg, fond_aggreg, zoom, 
                        id = c("IRISrS_CODE", "IRISrS_CODE"))
 
+
+# Creation de cartes et graphiques --------------------------------------------
 map_q(fondata,
       tot = "C20_POP15P", 
-      var = "C20_POP15P_CS3", 
-      breaks = "q6",
+      var = "C20_POP15P_CS6", 
+      breaks = 4,
       zoomlabel = label)
-
 
 map_bi(fondata, 
        tots = c("C20_POP15P", "C20_POP15P"), 
        vars = c("C20_POP15P_CS3", "C20_POP15P_CS6"))
 
 
+
+
+
+
+
+
+data <- mar$data$csp
+tabl <- mar$pass$irisf
+tmp <- merge(data, tabl, by.x = "IRIS", by.y = "IRIS_CODE", all.x = TRUE) 
+tmp <- tmp[, c(1, 15, 4:13)]
+
+tabl <- mar$pass$irisr
+tmp <- merge(tmp, tabl, by = "IRISF_CODE", all.x = TRUE)
+tmp <- tmp[, c(2, 1, 16, 18, 3:12)]
+
+tabl <- mar$app$irisr
+tmp <- merge(tmp, tabl, by = "IRISrD_CODE", all.x = TRUE)
+tmp <- tmp[, c(1, 5:14, 36:39)]
+
+# plot_glis(data = tmp, 
+#           vars = c("C20_POP15P_CS3", "C20_POP15P_CS6"), 
+#           tot = "C20_POP15P", 
+#           plot = TRUE)
+
+# asf_plotypo(data = tmp,
+#             vars = c(4:11),
+#             typo = "CATEAAV2020")
+# 
+# asf_plotvar(data = tmp,
+#             vars = c(4:11),
+#             typo = "TAAV2017",
+#             order = c(4, 1, 2, 6, 3, 5))
+
+
+
+
+# Exemple de dataframe
+set.seed(123)
+
+df <- data.frame(
+  commune = paste0("Commune_", 1:100),
+  departement = sample(c("01 - Ain", "02 - Aisne", "03 - Allier"), 100, replace = TRUE),
+  csp_typologie = sample(c("Populaire", "Cadre", "Agricole", "Intermediaire"), 100, replace = TRUE)
+)
+asf_plotcat_by_typo(data = df,
+                    catvar = "csp_typologie",
+                    typo = "departement")
+
+
+asf_plotcat_by_typo <- function(data,
+                                catvar,   # La variable catégorielle à étudier
+                                typo,     # La variable de regroupement (typologie)
+                                pal = NULL) {
+  
+  # CHECK PARAMS --------------------------------------------------------------
+  v1 <- deparse(substitute(data))
+  
+  if (!catvar %in% names(data)) {
+    stop(paste0("La colonne spécifiée dans 'catvar' n'existe pas dans ", v1),
+         call. = FALSE)
+  }
+  
+  if (!typo %in% names(data)) {
+    stop(paste0("La colonne spécifiée dans 'typo' n'existe pas dans ", v1),
+         call. = FALSE)
+  }
+  
+  # PROCESSING ----------------------------------------------------------------
+  tab <- as.data.frame(table(data[[typo]], data[[catvar]]))
+  names(tab) <- c("group", "category", "count")
+  
+  # Pourcentages par groupe
+  tab <- tab |>
+    dplyr::group_by(group) |>
+    dplyr::mutate(pct = count / sum(count) * 100) |>
+    dplyr::ungroup()
+  
+  # Palette
+  if (is.null(pal)) {
+    n_cat <- length(unique(tab$category))
+    pal <- stats::setNames(RColorBrewer::brewer.pal(min(n_cat, 8), "Set2"),
+                           sort(unique(tab$category)))
+  }
+  
+  # Graphique
+  p <- ggplot2::ggplot(tab, ggplot2::aes(x = group, y = pct, fill = category)) +
+    ggplot2::geom_bar(stat = "identity") +
+    ggplot2::labs(title = paste("Répartition de", catvar, "par", typo),
+                  x = typo,
+                  y = "Pourcentage (%)") +
+    ggplot2::scale_fill_manual(values = pal) +
+    ggplot2::theme_minimal() +
+    ggplot2::coord_flip()
+  
+  print(p)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# data <- tmp
+# vars <- c(4:11)
+# typo <- "CATEAAV2020"
+# order = c(1, 3, 5, 2, 4)
+# pal = NULL
+# 
+# # SUB-FUNCTIONS -------------------------------------------------------------
+# .calc_pct_cat <- function(cat) {
+#   cat_data <- data[data[[typo]] == cat, vars, drop = FALSE]
+#   total <- colSums(cat_data, na.rm = TRUE)
+#   data.frame(
+#     category = cat,
+#     variable = vars,
+#     pct = (total / sum(total)) * 100
+#   )
+# }
+# 
+# # PROCESSING ----------------------------------------------------------------
+# if (is.numeric(vars)) {
+#   vars <- names(data)[vars]
+# }
+# 
+# categories <- unique(data[[typo]])
+# 
+# # Application d'un ordre pour les categories si specifie
+# if (!is.null(order)) {
+#   if (is.numeric(order)) {
+#     categories <- categories[order]
+#     
+#   } else if (is.character(order)) {
+#     categories <- order
+#   }
+# }
+# 
+# # Si aucune couleur n'est specifiee, une palette par defaut est generee
+# if (is.null(pal)) {
+#   pal <- stats::setNames(grDevices::colorRampPalette(c("#000000", "#f2f2f2"))(length(vars)), vars)
+# }
+# 
+# # Calcul des pourcentages pour chaque categorie et empilage des resultats
+# z <- do.call(rbind, lapply(categories, .calc_pct_cat))
+# 
+# # Predefinition de l'ordre des categories pour le graphique
+# z$category <- factor(z$category, levels = rev(categories))
+# 
+# # Graphique avec ggplot2
+# p <- ggplot2::ggplot(z, ggplot2::aes(x = category, y = pct, fill = variable)) +
+#      ggplot2::geom_bar(stat = "identity") +
+#      ggplot2::labs(title = paste("Repartition des variables par categorie :", typo),
+#                    x = "Categories",
+#                    y = "Pourcentage (%)") +
+#      ggplot2::scale_fill_manual(values = pal) +
+#      ggplot2::theme_minimal() +
+#      ggplot2::coord_flip()
+# 
+# print(p)
+# 
+# 
+# 
+# rm(data, p, tabl, tmp, z, categories, order, pal, typo, vars)
 
 
 
