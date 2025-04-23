@@ -104,12 +104,14 @@ test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 ###############################################################################
 ######################################## TEST MAILLAGE COMPOSITE D'ALIETTE ROUX
 
-mar <- asf_mar()
-
+# Telechargement des objets d'Aliette deposes sur le sharedocs
+mar <- asf_mar(ar01 = TRUE,
+               ar02 = TRUE, 
+               data = TRUE)
 
 # Fond de carte ---------------------------------------------------------------
-fond <- mar$geom$irisf
-tabl <- mar$pass$irisr
+fond <- mar$ar01$sf.irisf
+tabl <- mar$ar02$d.irisr.pass
 
 # Repositionnement des DROM
 fond <- asf_drom(fond, 
@@ -117,9 +119,10 @@ fond <- asf_drom(fond,
 
 # Creation des limites departementales
 dep <- asf_dep(fond, 
-               id = "IRISF_CODE")
+               id = "IRISF_CODE",
+               keep = 0.05)
 
-# Fond de carte specifique
+# Creation du fond des irisr a partir des irisf
 fond_aggreg <- asf_fond(tabl, 
                         fond, 
                         id = c("IRISF_CODE", "IRISF_CODE"), 
@@ -133,13 +136,14 @@ zoom <- z$zoom
 label <- z$label
 
 # Simplification des geometries du fond de carte
-fond_aggreg <- asf_simplify(fond_aggreg)
+fond_simply <- asf_simplify(fond_aggreg)
 
 
 # Data ------------------------------------------------------------------------
-data <- mar$data$csp
+data <- mar$data$d.datatest
 
-data_aggreg <- asf_data(tabl, data, 
+data_aggreg <- asf_data(tabl, 
+                        data, 
                         vars = c(4:13), 
                         funs = c("sum"), 
                         id = c("IRIS_CODE", "IRIS"), 
@@ -147,22 +151,27 @@ data_aggreg <- asf_data(tabl, data,
 
 
 # Jointure --------------------------------------------------------------------
-fondata <- asf_fondata(data_aggreg, fond_aggreg, zoom, 
+fondata <- asf_fondata(data_aggreg, 
+                       fond_simply, 
+                       zoom, 
                        id = c("IRISrS_CODE", "IRISrS_CODE"))
 
 
 # Creation de cartes et graphiques --------------------------------------------
-map_q(fondata,
-      tot = "C20_POP15P", 
-      var = "C20_POP15P_CS6", 
-      breaks = 4,
-      zoomlabel = label)
+mf_map(fondata, 
+       var = "C20_POP15P_CS6", 
+       type = "choro", 
+       nbreaks = 6, 
+       border = NA)
 
-map_bi(fondata, 
-       tots = c("C20_POP15P", "C20_POP15P"), 
-       vars = c("C20_POP15P_CS3", "C20_POP15P_CS6"))
+mf_label(label, 
+         var = "nom", 
+         cex = 0.8)
 
-
+mf_map(dep, 
+       col = "white", 
+       lwd = 0.5, 
+       add = TRUE)
 
 
 
@@ -188,7 +197,7 @@ tmp <- tmp[, c(1, 5:14, 36:39)]
 #           plot = TRUE)
 
 asf_plotypo(data = tmp,
-            vars = c(4),
+            vars = c(4:11),
             typo = "CATEAAV2020")
 
 asf_plotvar(data = tmp,
@@ -204,23 +213,28 @@ set.seed(123)
 
 df <- data.frame(
   commune = paste0("Commune_", 1:100),
-  departement = sample(c("01 - Ain", "02 - Aisne", "03 - Allier"), 100, replace = TRUE),
+  departement = sample(c("01", "02", "03", "04", "05"), 100, replace = TRUE),
   csp_typologie = sample(c("Populaire", "Cadre", "Agricole", "Intermediaire"), 100, replace = TRUE)
 )
-asf_plotcat_by_typo(data = df,
-                    catvar = "csp_typologie",
-                    typo = "departement")
 
-data <- df
-catvar <- "csp_typologie"
-typo <- "departement"
-pal <- NULL
+asf_plotypoU(data = df,
+             catvar = "csp_typologie",
+             typo = "departement")
+
+asf_plotvarU(data = df, 
+             var = "csp_typologie", 
+             typo = "departement")
+
+# data <- df
+# catvar <- "csp_typologie"
+# typo <- "departement"
+# pal <- NULL
 
 
-asf_plotypo <- function(data, 
-                        catvar, 
-                        typo, 
-                        pal = NULL) {
+asf_plotypoU <- function(data, 
+                         catvar, 
+                         typo, 
+                         pal = NULL) {
   
   tmp <- table(data[[typo]], data[[catvar]])
   data <- as.data.frame(tmp)
@@ -253,10 +267,60 @@ asf_plotypo <- function(data,
   print(p)
 }
 
-
-
-
-
+asf_plotvarU <- function(data,
+                         var,
+                         typo,
+                         order = NULL,
+                         pal = NULL) {
+  
+  # PROCESSING ----------------------------------------------------------------
+  categories <- unique(data[[typo]])
+  
+  if (!is.null(order)) {
+    if (is.numeric(order)) {
+      categories <- categories[order]
+    } else if (is.character(order)) {
+      categories <- order
+    }
+  }
+  
+  # Table croisée
+  tab <- table(data[[var]], data[[typo]])
+  df <- as.data.frame(tab)
+  names(df) <- c("var", "typo", "count")
+  
+  # Calcul des pourcentages pour chaque modalité (sur ligne)
+  df$pct <- NA
+  for (v in unique(df$var)) {
+    idx <- df$var == v
+    total <- sum(df$count[idx])
+    df$pct[idx] <- df$count[idx] / total * 100
+  }
+  
+  df$typo <- factor(df$typo, levels = categories)
+  df$var <- factor(df$var, levels = unique(df$var))  # Ou levels arbitraires
+  
+  # Palette : adaptée au nombre de modalités de la variable var
+  if (is.null(pal)) {
+    n_modalities <- length(unique(df$typo))
+    pal <- stats::setNames(
+      grDevices::colorRampPalette(c("#000000", "#f2f2f2"))(n_modalities),
+      categories
+    )
+  }
+  
+  # Graphique
+  p <- ggplot2::ggplot(df, ggplot2::aes(x = var, y = pct, fill = typo)) +
+    ggplot2::geom_bar(stat = "identity") +
+    ggplot2::labs(title = paste("Répartition des modalités de", var, "par", typo),
+                  x = var,
+                  y = "Pourcentage (%)") +
+    ggplot2::scale_fill_manual(values = pal) +
+    ggplot2::theme_minimal() +
+    ggplot2::coord_flip()
+  
+  print(p)
+}
 
 
 
