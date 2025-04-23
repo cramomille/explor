@@ -187,14 +187,14 @@ tmp <- tmp[, c(1, 5:14, 36:39)]
 #           tot = "C20_POP15P", 
 #           plot = TRUE)
 
-# asf_plotypo(data = tmp,
-#             vars = c(4:11),
-#             typo = "CATEAAV2020")
-# 
-# asf_plotvar(data = tmp,
-#             vars = c(4:11),
-#             typo = "TAAV2017",
-#             order = c(4, 1, 2, 6, 3, 5))
+asf_plotypo(data = tmp,
+            vars = c(4),
+            typo = "CATEAAV2020")
+
+asf_plotvar(data = tmp,
+            vars = c(4),
+            typo = "TAAV2017",
+            order = c(4, 1, 2, 6, 3, 5))
 
 
 
@@ -211,46 +211,39 @@ asf_plotcat_by_typo(data = df,
                     catvar = "csp_typologie",
                     typo = "departement")
 
+data <- df
+catvar <- "csp_typologie"
+typo <- "departement"
+pal <- NULL
 
-asf_plotcat_by_typo <- function(data,
-                                catvar,   # La variable catégorielle à étudier
-                                typo,     # La variable de regroupement (typologie)
-                                pal = NULL) {
+
+asf_plotypo <- function(data, 
+                        catvar, 
+                        typo, 
+                        pal = NULL) {
   
-  # CHECK PARAMS --------------------------------------------------------------
-  v1 <- deparse(substitute(data))
+  tmp <- table(data[[typo]], data[[catvar]])
+  data <- as.data.frame(tmp)
+  names(data) <- c("typo", "var", "count")
   
-  if (!catvar %in% names(data)) {
-    stop(paste0("La colonne spécifiée dans 'catvar' n'existe pas dans ", v1),
-         call. = FALSE)
+  # Calcul des pourcentages par categorie de la typologie
+  data$pct <- NA
+  for (g in unique(data$typo)) {
+    idx <- data$typo == g
+    total <- sum(data$count[idx])
+    data$pct[idx] <- data$count[idx] / total * 100
   }
-  
-  if (!typo %in% names(data)) {
-    stop(paste0("La colonne spécifiée dans 'typo' n'existe pas dans ", v1),
-         call. = FALSE)
-  }
-  
-  # PROCESSING ----------------------------------------------------------------
-  tab <- as.data.frame(table(data[[typo]], data[[catvar]]))
-  names(tab) <- c("group", "category", "count")
-  
-  # Pourcentages par groupe
-  tab <- tab |>
-    dplyr::group_by(group) |>
-    dplyr::mutate(pct = count / sum(count) * 100) |>
-    dplyr::ungroup()
   
   # Palette
   if (is.null(pal)) {
-    n_cat <- length(unique(tab$category))
-    pal <- stats::setNames(RColorBrewer::brewer.pal(min(n_cat, 8), "Set2"),
-                           sort(unique(tab$category)))
+    nb_cat <- length(unique(data$var))
+    pal <- stats::setNames(grDevices::rainbow(nb_cat), sort(unique(data$var)))
   }
   
   # Graphique
-  p <- ggplot2::ggplot(tab, ggplot2::aes(x = group, y = pct, fill = category)) +
+  p <- ggplot2::ggplot(data, ggplot2::aes(x = typo, y = pct, fill = var)) +
     ggplot2::geom_bar(stat = "identity") +
-    ggplot2::labs(title = paste("Répartition de", catvar, "par", typo),
+    ggplot2::labs(title = paste("Repartition de", catvar, "par", typo),
                   x = typo,
                   y = "Pourcentage (%)") +
     ggplot2::scale_fill_manual(values = pal) +
@@ -259,9 +252,6 @@ asf_plotcat_by_typo <- function(data,
   
   print(p)
 }
-
-
-
 
 
 
