@@ -114,7 +114,7 @@ fond <- mar$ar01$sf.irisf
 tabl <- mar$ar02$d.irisr.pass
 
 # Repositionnement des DROM
-fond <- asf_drom(fond, 
+fond <- asf_drom(fond,
                  id = "IRISF_CODE")
 
 # Creation des limites departementales
@@ -130,7 +130,7 @@ fond_aggreg <- asf_fond(tabl,
 
 # Creation de zooms
 z <- asf_zoom(fond_aggreg, 
-              villes = c(1:8))
+              villes = c("Paris", "Avignon", "Bergerac", "Annecy"))
 
 zoom <- z$zoom
 label <- z$label
@@ -157,7 +157,7 @@ fondata <- asf_fondata(data_aggreg,
                        id = c("IRISrS_CODE", "IRISrS_CODE"))
 
 
-# Creation de cartes et graphiques --------------------------------------------
+# Creation de cartes ----------------------------------------------------------
 mf_map(fondata, 
        var = "C20_POP15P_CS6", 
        type = "choro", 
@@ -174,34 +174,27 @@ mf_map(dep,
        add = TRUE)
 
 
-
-
-
-
-data <- mar$data$csp
-tabl <- mar$pass$irisf
+# Creation de graphiques ------------------------------------------------------
+data <- mar$data$d.datatest
+tabl <- mar$ar01$d.irisf.pass
 tmp <- merge(data, tabl, by.x = "IRIS", by.y = "IRIS_CODE", all.x = TRUE) 
 tmp <- tmp[, c(1, 15, 4:13)]
 
-tabl <- mar$pass$irisr
+tabl <- mar$ar02$d.irisr.pass
 tmp <- merge(tmp, tabl, by = "IRISF_CODE", all.x = TRUE)
 tmp <- tmp[, c(2, 1, 16, 18, 3:12)]
 
-tabl <- mar$app$irisr
+tabl <- mar$ar02$d.irisr.app
 tmp <- merge(tmp, tabl, by = "IRISrD_CODE", all.x = TRUE)
 tmp <- tmp[, c(1, 5:14, 36:39)]
 
-# plot_glis(data = tmp, 
-#           vars = c("C20_POP15P_CS3", "C20_POP15P_CS6"), 
-#           tot = "C20_POP15P", 
-#           plot = TRUE)
-
 asf_plotypo(data = tmp,
             vars = c(4:11),
-            typo = "CATEAAV2020")
+            typo = "CATEAAV2020",
+            order = c("11", "12", "13", "20", "30"))
 
 asf_plotvar(data = tmp,
-            vars = c(4),
+            vars = c(4:11),
             typo = "TAAV2017",
             order = c(4, 1, 2, 6, 3, 5))
 
@@ -217,31 +210,35 @@ df <- data.frame(
   csp_typologie = sample(c("Populaire", "Cadre", "Agricole", "Intermediaire"), 100, replace = TRUE)
 )
 
-asf_plotypoU(data = df,
-             catvar = "csp_typologie",
-             typo = "departement")
+asf_plotypoU(df_input = df,
+             var_name = "csp_typologie",
+             typo_name = "departement")
 
 asf_plotvarU(data = df, 
              var = "csp_typologie", 
              typo = "departement")
 
-# data <- df
-# catvar <- "csp_typologie"
-# typo <- "departement"
-# pal <- NULL
+
+
+
+data <- df
+var <- "csp_typologie"
+typo <- "departement"
+pal <- NULL
 
 
 asf_plotypoU <- function(data, 
-                         catvar, 
+                         var, 
                          typo, 
                          pal = NULL) {
   
-  tmp <- table(data[[typo]], data[[catvar]])
+  tmp <- table(data[[typo]], data[[var]])
   data <- as.data.frame(tmp)
   names(data) <- c("typo", "var", "count")
   
   # Calcul des pourcentages par categorie de la typologie
   data$pct <- NA
+  
   for (g in unique(data$typo)) {
     idx <- data$typo == g
     total <- sum(data$count[idx])
@@ -257,9 +254,9 @@ asf_plotypoU <- function(data,
   # Graphique
   p <- ggplot2::ggplot(data, ggplot2::aes(x = typo, y = pct, fill = var)) +
     ggplot2::geom_bar(stat = "identity") +
-    ggplot2::labs(title = paste("Repartition de", catvar, "par", typo),
-                  x = typo,
-                  y = "Pourcentage (%)") +
+    ggplot2::labs(title = paste("Repartition de la variable par", typo),
+                  x = "categories",
+                  y = "pourcentage (%)") +
     ggplot2::scale_fill_manual(values = pal) +
     ggplot2::theme_minimal() +
     ggplot2::coord_flip()
@@ -332,72 +329,156 @@ asf_plotvarU <- function(data,
 
 
 
-# data <- tmp
-# vars <- c(4:11)
-# typo <- "CATEAAV2020"
-# order = c(1, 3, 5, 2, 4)
-# pal = NULL
-# 
-# # SUB-FUNCTIONS -------------------------------------------------------------
-# .calc_pct_cat <- function(cat) {
-#   cat_data <- data[data[[typo]] == cat, vars, drop = FALSE]
-#   total <- colSums(cat_data, na.rm = TRUE)
-#   data.frame(
-#     category = cat,
-#     variable = vars,
-#     pct = (total / sum(total)) * 100
-#   )
-# }
-# 
-# # PROCESSING ----------------------------------------------------------------
-# if (is.numeric(vars)) {
-#   vars <- names(data)[vars]
-# }
-# 
-# categories <- unique(data[[typo]])
-# 
-# # Application d'un ordre pour les categories si specifie
-# if (!is.null(order)) {
-#   if (is.numeric(order)) {
-#     categories <- categories[order]
-#     
-#   } else if (is.character(order)) {
-#     categories <- order
-#   }
-# }
-# 
-# # Si aucune couleur n'est specifiee, une palette par defaut est generee
-# if (is.null(pal)) {
-#   pal <- stats::setNames(grDevices::colorRampPalette(c("#000000", "#f2f2f2"))(length(vars)), vars)
-# }
-# 
-# # Calcul des pourcentages pour chaque categorie et empilage des resultats
-# z <- do.call(rbind, lapply(categories, .calc_pct_cat))
-# 
-# # Predefinition de l'ordre des categories pour le graphique
-# z$category <- factor(z$category, levels = rev(categories))
-# 
-# # Graphique avec ggplot2
-# p <- ggplot2::ggplot(z, ggplot2::aes(x = category, y = pct, fill = variable)) +
-#      ggplot2::geom_bar(stat = "identity") +
-#      ggplot2::labs(title = paste("Repartition des variables par categorie :", typo),
-#                    x = "Categories",
-#                    y = "Pourcentage (%)") +
-#      ggplot2::scale_fill_manual(values = pal) +
-#      ggplot2::theme_minimal() +
-#      ggplot2::coord_flip()
-# 
-# print(p)
-# 
-# 
-# 
-# rm(data, p, tabl, tmp, z, categories, order, pal, typo, vars)
 
 
 
 
 
 
+
+
+
+
+asf_plotypo <- function(data, 
+                        vars, 
+                        typo, 
+                        order = NULL, 
+                        pal = NULL) {
+  
+  # SUB-FUNCTIONS -------------------------------------------------------------
+  .var_num <- function(cat) {
+    sub_data <- data[data[[typo]] == cat, vars, drop = FALSE]
+    total <- colSums(sub_data, na.rm = TRUE)
+    data.frame(
+      category = cat,
+      variable = vars,
+      pct = (total / sum(total)) * 100
+    )
+  }
+  
+  .var_cat <- function() {
+    z <- as.data.frame(table(data[[typo]], data[[vars]]))
+    names(z) <- c("category", "variable", "freq")
+    z$pct <- 100 * z$freq / ave(z$freq, z$category, FUN = sum)
+    z
+  }
+  
+  # CHECK PARAMS --------------------------------------------------------------
+  v1 <- deparse(substitute(data))
+  v2 <- unique(data[[typo]])
+  
+  if (length(vars) == 1) {
+    v3 <- data[[vars]]
+    if (!is.character(v3)) {
+      stop("si 'vars' contient un seul element, la colonne correspondante doit etre de type 'character'")
+    }
+  }
+  
+  if (is.numeric(vars)) {
+    if (max(vars) > ncol(data)) {
+      stop(paste0("certains indices de colonnes specifies dans 'vars' sont trop grands pour ", v1),
+           call. = FALSE)
+    }
+  } else if (is.character(vars)) {
+    if (!all(vars %in% names(data))) {
+      stop(paste0("certaines colonnes specifiees dans 'vars' ne sont pas presentes dans ", v1),
+           call. = FALSE)
+    }
+  } else {
+    stop("'vars' doit etre un vecteur contenant des noms ou des indices de colonnes",
+         call. = FALSE)
+  }
+  
+  if (!typo %in% names(data)) {
+    stop(paste0("la colonne specifiee dans 'typo' n'existe pas dans ", v1),
+         call. = FALSE)
+  }
+  
+  if (!is.null(order)) {
+    if (is.numeric(order)) {
+      if (!all(order %in% seq_along(v2))) {
+        stop("certains indices fournis dans 'order' ne correspondent pas aux indices des categories de la typologie",
+             call. = FALSE)
+      }
+    } else if (is.character(order)) {
+      if (!all(order %in% v2)) {
+        stop("certains noms fournis dans 'order' ne correspondent pas aux noms des categories de la typologie",
+             call. = FALSE)
+      }
+    } else {
+      stop("'order' doit etre un vecteur contenant des noms ou des indices",
+           call. = FALSE)
+    }
+  }
+  
+  # PROCESSING ----------------------------------------------------------------
+  if (is.numeric(vars)) {
+    vars <- names(data)[vars]
+  }
+  
+  unique_var <- length(vars) == 1 && is.character(data[[vars]])
+  
+  if (!is.null(order)) {
+    if (is.numeric(order)) {
+      categories <- unique(data[[typo]])[order]
+    } else {
+      categories <- order
+    }
+  } else {
+    categories <- unique(data[[typo]])
+  }
+  
+  if (unique_var) {
+    z <- .var_cat()
+  } else {
+    z <- do.call(rbind, lapply(categories, .var_num))
+  }
+  
+  z$category <- factor(z$category, levels = rev(categories))
+  
+  if (is.null(pal)) {
+    noms_var <- sort(unique(z$variable))
+    pal <- stats::setNames(grDevices::rainbow(length(noms_var)), noms_var)
+  }
+  
+  # PLOT ----------------------------------------------------------------------
+  ggplot2::ggplot(z, ggplot2::aes(x = category, y = pct, fill = variable)) +
+    ggplot2::geom_bar(stat = "identity") +
+    ggplot2::labs(
+      title = paste("repartition", if (unique_var) "de la variable" else "des variables", "par", typo),
+      x = "categories",
+      y = "pourcentage (%)"
+    ) +
+    ggplot2::scale_fill_manual(values = pal) +
+    ggplot2::theme_minimal() +
+    ggplot2::coord_flip()
+}
+
+
+
+# Exemple de dataframe
+set.seed(123)
+
+df <- data.frame(
+  commune = paste0("Commune_", 1:100),
+  departement = sample(c("01", "02", "03", "04", "05"), 100, replace = TRUE),
+  csp_typologie = sample(c("Populaire", "Cadre", "Agricole", "Intermediaire"), 100, replace = TRUE)
+)
+
+asf_plotypo(data = df,
+            vars = "csp_typologie",
+            typo = "departement")
+
+df <- data.frame(
+  typo = rep(c("urbain", "rural", "mixte"), each = 10),
+  var_a = sample(50:100, 30, replace = TRUE),
+  var_b = sample(30:80, 30, replace = TRUE),
+  var_c = sample(10:60, 30, replace = TRUE)
+)
+
+asf_plotypo(data = df, 
+            vars = c("var_a", "var_b", "var_c"), 
+            typo = "typo")
 
 
 
