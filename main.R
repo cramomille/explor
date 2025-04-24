@@ -107,7 +107,7 @@ test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 # Telechargement des objets d'Aliette deposes sur le sharedocs
 mar <- asf_mar(ar01 = TRUE,
                ar02 = TRUE, 
-               data = TRUE)
+               sf = FALSE)
 
 # Fond de carte ---------------------------------------------------------------
 fond <- mar$ar01$sf.irisf
@@ -190,16 +190,12 @@ tmp <- tmp[, c(1, 5:14, 36:39)]
 
 asf_plotypo(data = tmp,
             vars = c(4:11),
-            typo = "CATEAAV2020",
-            order = c("11", "12", "13", "20", "30"))
+            typo = "TAAV2017")
 
 asf_plotvar(data = tmp,
             vars = c(4:11),
             typo = "TAAV2017",
             order = c(4, 1, 2, 6, 3, 5))
-
-
-
 
 
 
