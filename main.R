@@ -194,13 +194,9 @@ asf_plotypo(data = tmp,
 
 asf_plotvar(data = tmp,
             vars = c(4:11),
-            typo = "TAAV2017",
-            order = c(4, 1, 2, 6, 3, 5))
-
-
-
-
-
+            typo = "TAAV2017", 
+            order_typo = c("0", "1", "2", "3", "4", "5"),
+            order_vars = c(1:6, 7, 8))
 
 
 
