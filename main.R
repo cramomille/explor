@@ -10,8 +10,8 @@ invisible(sapply(list.files("script/function",
                  source))
 
 library(sf)
-library(asf)
 library(mapsf)
+library(asf)
 
 options(error = NULL)
 
@@ -82,23 +82,6 @@ x <- data.frame(
 y <- dput(x) # test de cette fonction
 
 test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
-
-# # install.packages("devtools")
-# devtools::install_github("alietteroux/subwork")
-# 
-# library(subwork)
-# 
-# # importer les données "FT810" dans un dataframe nommé "FT810.data"
-# FT810.data <- import(code = "FT810", type = "data")
-# 
-# # FT711.data pour echelle com
-# # base to salariers
-# 
-# 
-# 
-# data <- aggreg_data(tabl = d.irisR.pass,
-#                     data = FT810.data, 
-#                     id = c("IRIS"))
 
 
 ###############################################################################
@@ -200,7 +183,9 @@ asf_plotvar(data = tmp,
             order_vars = c(1:6, 8, 7),
             order_typo = c("5", "1", "2", "3", "4", "0"))
 
-
+asf_plotvar(data = tmp,
+            vars = c(4),
+            typo = "TAAV2017")
 
 
 
