@@ -105,9 +105,7 @@ test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 ######################################## TEST MAILLAGE COMPOSITE D'ALIETTE ROUX
 
 # Telechargement des objets d'Aliette deposes sur le sharedocs
-mar <- asf_mar(ar01 = TRUE,
-               ar02 = TRUE, 
-               sf = FALSE)
+mar <- asf_mar()
 
 # Fond de carte ---------------------------------------------------------------
 fond <- mar$ar01$sf.irisf
@@ -175,6 +173,8 @@ mf_map(dep,
 
 
 # Creation de graphiques ------------------------------------------------------
+mar <- asf_mar(sf = FALSE)
+
 data <- mar$data$d.datatest
 tabl <- mar$ar01$d.irisf.pass
 tmp <- merge(data, tabl, by.x = "IRIS", by.y = "IRIS_CODE", all.x = TRUE) 
@@ -190,13 +190,15 @@ tmp <- tmp[, c(1, 5:14, 36:39)]
 
 asf_plotypo(data = tmp,
             vars = c(4:11),
-            typo = "TAAV2017")
+            typo = "TAAV2017", 
+            order_vars = c(1:6, 8, 7), 
+            order_typo = c("5", "1", "2", "3", "4", "0"))
 
 asf_plotvar(data = tmp,
             vars = c(4:11),
             typo = "TAAV2017", 
-            order_typo = c("0", "1", "2", "3", "4", "5"),
-            order_vars = c(1:6, 7, 8))
+            order_vars = c(1:6, 8, 7),
+            order_typo = c("5", "1", "2", "3", "4", "0"))
 
 
 
