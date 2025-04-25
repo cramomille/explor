@@ -101,10 +101,43 @@ mar <- asf_mar()
 # Couche geographique des iris regroupes
 fond <- mar$ar02$sf.irisr.s
 
-# Jointure entre le fond et les donnees agregees
-fondata <- merge(fond, irisr, by = "IRISrS_CODE")
+fond <- asf_drom(fond, 
+                 id = "IRISrS_CODE")
 
-# Test de carte
-mf_map(fondata, var = "RP18_F_R_CP1_C1.Agri", type = "prop")
+mf_map(fond)
+
+# Creation de zooms
+z <- asf_zoom(fond,
+              villes = c("Paris", "Avignon", "Mulhouse"), 
+              lon = c(5.721), 
+              lat = c(45.182),
+              buffer = 10000)
+
+zoom <- z$zoom
+label <- z$label
+
+mf_map(zoom)
+
+
+# Jointure entre le fond et les donnees agregees
+fondata <- asf_fondata(fond, zoom, datar, by = "IRISrS_CODE")
+
+str(fond)
+str(datar)
+
+mf_map(fondata,
+       var = "clust15", 
+       type = "typo",
+       pal = palette,
+       border = NA)
+
+mf_label(label, 
+         var = "nom", 
+         col = "#000000", 
+         font = 1)
+
+
+
+
 
 
