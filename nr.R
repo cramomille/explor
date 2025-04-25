@@ -10,10 +10,10 @@
 ################################################### INSTALLATION DU PACKAGE ASF
 
 # Installation du package remotes pour permettre l'installation de packages sur GitLab
-install.packages("remotes")
+# install.packages("remotes")
 
 # Installation du package asf
-remotes::install_gitlab("atlas-social-de-la-france/asf", host = "gitlab.huma-num.fr")
+# remotes::install_gitlab("atlas-social-de-la-france/asf", host = "gitlab.huma-num.fr")
 
 # Lancement des packages utilises dans le code
 library(sf)
@@ -21,17 +21,21 @@ library(mapsf)
 library(asf)
 
 
+###############################################################################
+############################################################ IMPORT DES DONNEES
+
 # install.packages("devtools")
 # devtools::install_github("alietteroux/subwork")
 
 library(subwork)
 
-# Import des donnees "FT810" dans un data.frame nomme "FT810.data"
+# Import des donnees d'interet
 FT810.data <- import(code = "FT810", type = "data")
 FT711.data <- import(code = "FT711", type = "data")
 
-cols <- "F_R_CP1"
+# Definition du tableau de donnees et des colonnes
 data <- FT810.data
+cols <- "F_R_CP1"
 
 data <- data[, c(1:3, grep(cols, names(data)))]
 
@@ -44,36 +48,48 @@ mar <- asf_mar(sf = FALSE)
 
 # Code des iris de reference
 tabl <- mar$ar01$d.irisf.pass
-irisf <- merge(tabl[, c("IRIS_CODE", "IRISF_CODE")], data, by.x = "IRISF_CODE", by.y = "IRIS")
+dataf <- merge(tabl[, c("IRIS_CODE", "IRISF_CODE")], data, 
+               by.x = "IRIS_CODE", by.y = "IRIS")
+
+# Verification du nombre d'iris differentes
+sum(length(unique(data$IRIS)))
+sum(length(unique(dataf$IRIS_CODE)))
 
 # Code des iris regroupes pour une analyse synchronique
 tabl <- mar$ar02$d.irisr.pass
-irisr <- merge(tabl[, c("IRISF_CODE", "IRISrS_CODE", "IRISrS_LIB")], irisf, by = "IRISF_CODE")
+datar <- merge(tabl[, c("IRISF_CODE", "IRISrS_CODE", "IRISrS_LIB")], dataf, 
+               by = "IRISF_CODE")
 
-id_i <- unique(irisr$IRIS_CODE)
-id_if <- unique(irisr$IRISF_CODE)
-id_ir <- unique(irisr$IRISrS_CODE)
+# Verification du nombre d'iris differentes
+sum(length(unique(dataf$IRIS_CODE)))
+sum(length(unique(datar$IRIS_CODE)))
+
+table(duplicated(dataf$IRIS_CODE))
+table(duplicated(datar$IRIS_CODE))
+
+# Suppression des doublons
+datar <- datar[!duplicated(datar$IRIS_CODE), ]
+
+###############################################################################
+######################################################## AGREGATION DES DONNEES
 
 # Agregation simple
-test <- rowsum(irisr[, c(7:24)], group = irisr$IRISrS_CODE)
+sum <- rowsum(datar[, c(7:24)], group = datar$IRISrS_CODE, na.rm = TRUE)
+x_aggreg <- data.frame(IRISrS_CODE = rownames(sum), sum, row.names = NULL)
 
-
-# Code des iris regroupes pour une analyse synchronique
+# Agregation avec le package asf
 tabl <- mar$ar02$d.irisr.pass
+y_aggreg <- asf_data(tabl,
+                     dataf,
+                     vars = c(5:22),
+                     funs = c("sum"),
+                     id = c("IRISF_CODE", "IRISF_CODE"),
+                     maille = "IRISrS_CODE")
 
-# Agregation des colonnes
-irisr <- asf_data(tabl,
-                  irisf,
-                  vars = c(5:22),
-                  funs = c("sum"),
-                  id = c("IRISF_CODE", "IRISF_CODE"),
-                  maille = "IRISrS_CODE")
-
-sum(irisr$RP18_F_R_CP1_C1.Agri)
-sum(irisr$RP18_F_R_CP1_C1.Agri)
-
-
-
+# Verification de la coherence des resultats
+sum(data$RP18_F_R_CP1_C1.Agri, na.rm = TRUE)
+sum(x_aggreg$RP18_F_R_CP1_C1.Agri, na.rm = TRUE)
+sum(y_aggreg$RP18_F_R_CP1_C1.Agri, na.rm = TRUE)
 
 
 ###############################################################################
