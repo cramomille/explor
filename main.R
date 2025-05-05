@@ -60,6 +60,11 @@ result <- parquet_open(dir = "output/parquet/",
                        cols = list(c("id", "ID"),
                                    c("value1", "VALUE1"),
                                    c("value2", "VALUE2")))
+
+# Ouverture de fichiers .parquet
+result <- parquet_open(dir = "output/parquet/",
+                       file = c("data1", "data2", "data3.parquet"),
+                       cols = c(1:3))
  
 data1 <- result[[1]]
 data2 <- result[[2]]
