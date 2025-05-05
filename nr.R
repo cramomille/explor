@@ -120,15 +120,12 @@ mf_map(zoom)
 
 
 # Jointure entre le fond et les donnees agregees
-fondata <- asf_fondata(fond, zoom, datar, by = "IRISrS_CODE")
+fondata <- asf_fondata(y_aggreg, fond, zoom, id = c("IRISrS_CODE", "IRISrS_CODE"))
 
-str(fond)
-str(datar)
 
-mf_map(fondata,
-       var = "clust15", 
-       type = "typo",
-       pal = palette,
+mf_map(fondata, 
+       var = "RP18_F_R_CP1_C3.Cadres", 
+       type = "choro",
        border = NA)
 
 mf_label(label, 
