@@ -28,15 +28,22 @@ parquet_open <- function(dir,
                          file, 
                          cols) {
   
+  # Verification du param 'cols'
+  mode_combo <- is.list(cols) && all(sapply(cols, is.character))
+  mode_simpl <- is.character(cols) || is.numeric(cols)
+  
+  if (!mode_combo && !mode_simpl) {
+    stop("'cols' doit etre un vecteur de noms ou d'indices de colonnes, ou une liste de combinaisons")
+  }
+  
   # Creation de la connexion a DuckDB pour executer des requetes SQL
   con <- dbConnect(duckdb())
   
-  # Initialisation de la liste pour stocker les donnees
+  # Initialisation de la liste pour stocker les donnees selectionnees
   result <- list()
   
   # Boucle pour chaque element de 'file' --------------------------------------
   for (f in file) {
-    
     # Verification pour savoir si l'element est un fichier individuel ou un dossier
     if (grepl("\\.parquet$", f)) {
       parquet <- file.path(dir, f)
@@ -46,55 +53,68 @@ parquet_open <- function(dir,
       parquet <- list.files(folder_dir, pattern = "\\.parquet$", full.names = TRUE)
       
       if (length(parquet) == 0) {
-        stop(paste("Aucun fichier .parquet dans le dossier:", folder_dir))
+        stop(paste("aucun fichier .parquet dans le dossier :", folder_dir))
       }
     }
     
-    # Creation d'une vue SQL pour agreger les fichiers .parquet
+    # Creation d'une requete SQL
     query <- paste0(
       "CREATE OR REPLACE VIEW all_data AS ",
       paste0("SELECT * FROM read_parquet('", parquet, "')", collapse = " UNION ALL ")
     )
+    
+    # Creation d'une vue SQL des fichiers .parquet agreges
     dbExecute(con, query)
     
     # Chargement de la vue en tant que table DuckDB
     tbl_duckdb <- tbl(con, "all_data")
     
-    # Recuperation des noms des colonnes que l'on souhaite conserver
-    cols_names <- paste0("col", seq_along(cols))
-    
-    # Generation de toutes les combinaisons de noms de colonnes possibles
-    combinaison <- do.call(expand.grid, c(setNames(cols, cols_names)))
-    
-    # Boucle de test des differentes combinaisons possibles -------------------
-    for (i in seq_len(nrow(combinaison))) {
-      comb <- combinaison[i, ]
+    # Traitement differencie en fonction du mode de 'cols' --------------------
+    if (mode_simpl) {
+      if (is.numeric(cols)) {
+        selected_cols <- colnames(tbl_duckdb)[cols]
+      } else {
+        selected_cols <- cols
+      }
       
-      tryCatch({
-        # Selection de la combinaison de noms des colonnes a tester
-        selected_cols <- unlist(lapply(comb, as.character))
+      # Selection des colonnes dans la table DuckDB
+      df <- tbl_duckdb %>%
+        select(all_of(selected_cols)) %>%
+        collect() %>%
+        as.data.frame()
+      
+      # Renommage des colonnes
+      colnames(df) <- selected_cols
+      
+      # Ajout a la liste et message informatif
+      result[[length(result) + 1]] <- df
+      message(f, " : ", paste(selected_cols, collapse = " | "))
+      
+    } else if (mode_combo) {
+      combinaison <- do.call(expand.grid, setNames(cols, paste0("col", seq_along(cols))))
+      
+      # Test des combinaisons jusqu'a trouver la bonne
+      for (i in seq_len(nrow(combinaison))) {
+        comb <- unlist(combinaison[i, ])
         
-        # Selection et collecte des colonnes choisies avec dplyr
-        selected_data <- tbl_duckdb %>%
-          select(all_of(selected_cols)) %>%
-          collect()
-        
-        # Conversion en data.farme et rennomage des colonnes
-        selected_data <- as.data.frame(selected_data)
-        colnames(selected_data) <- selected_cols
-        
-        if (nrow(selected_data) > 0) {
-          # Stockage des donnees dans la liste
-          result[[length(result) + 1]] <- selected_data
+        tryCatch({
+          # Selection des colonnes dans la table DuckDB
+          df <- tbl_duckdb %>%
+            select(all_of(comb)) %>%
+            collect() %>%
+            as.data.frame()
           
-          # Message d'information sur la combinaison utilisee
-          print(paste(f, ":", paste0(selected_cols, collapse = " | ")))
+          # Renommage des colonnes
+          colnames(df) <- comb
           
-          # Arret des test des que la combinaison valide est trouvee
-          break
-        }
-      }, error = function(e) {
-      })
+          # Si des donnees ont bien ete conservees, on garde cette version et on passe a la colonne suivante
+          if (nrow(df) > 0) {
+            result[[length(result) + 1]] <- df
+            message(f, " : ", paste(comb, collapse = " | "))
+            break
+          }
+        }, error = function(e) {})
+      }
     }
   }
   
