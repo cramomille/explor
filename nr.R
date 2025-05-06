@@ -122,7 +122,6 @@ mf_map(zoom)
 # Jointure entre le fond et les donnees agregees
 fondata <- asf_fondata(y_aggreg, fond, zoom, id = c("IRISrS_CODE", "IRISrS_CODE"))
 
-
 mf_map(fondata, 
        var = "RP18_F_R_CP1_C3.Cadres", 
        type = "choro",
