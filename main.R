@@ -89,15 +89,6 @@ test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 
 
 
-
-
-
-
-
-
-
-
-
 data <- df
 var <- 1
 is.character(data[[var]])
