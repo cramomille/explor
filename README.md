@@ -11,4 +11,4 @@ Ce repositorie contient des scripts et des fonctions en R
 ### Fonctions pour le traitement de donnees
 
 - calc_tvma() : calcul du taux de variation moyen annuel d'un tableau de donnees
-- secret_data() : secretisation de tableau de donnees
+- secret_data() : secretisation d'un tableau de donnees
