@@ -29,17 +29,17 @@ dep <- asf_dep(fond,
                keep = 0.05)
 
 # Creation du fond des irisr a partir des irisf
-fond_aggreg <- asf_fond(tabl, 
-                        fond, 
-                        id = c("IRISF_CODE", "IRISF_CODE"), 
+fond_aggreg <- asf_fond(fond, 
+                        tabl,
+                        by = "IRISF_CODE", 
                         maille = "IRISrS_CODE") 
 
 # Creation de zooms
 z <- asf_zoom(fond_aggreg, 
-              villes = c("Paris", "Avignon", "Bergerac", "Annecy"))
+              places = c("Paris", "Avignon", "Bergerac", "Annecy"))
 
-zoom <- z$zoom
-label <- z$label
+zoom <- z$zooms
+label <- z$labels
 
 # Simplification des geometries du fond de carte
 fond_simply <- asf_simplify(fond_aggreg)
@@ -48,12 +48,13 @@ fond_simply <- asf_simplify(fond_aggreg)
 # Data ------------------------------------------------------------------------
 data <- mar$data$d.datatest
 
-data_aggreg <- asf_data(tabl, 
-                        data, 
+data_aggreg <- asf_data(data, 
+                        tabl, 
+                        by.x = "IRIS",
+                        by.y = "IRIS_CODE", 
+                        maille = "IRISrS_CODE",
                         vars = c(4:13), 
-                        funs = c("sum"), 
-                        id = c("IRIS_CODE", "IRIS"), 
-                        maille = "IRISrS_CODE")
+                        funs = c("sum"))
 
 
 # Jointure --------------------------------------------------------------------
