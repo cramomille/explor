@@ -20,17 +20,17 @@ fond <- mar$ar01$sf.irisf
 tabl <- mar$ar02$d.irisr.pass
 
 # Repositionnement des DROM
-fond <- asf_drom(fond,
+fond <- asf_drom(fond, 
                  id = "IRISF_CODE")
 
 # Creation des limites departementales
-dep <- asf_dep(fond, 
-               id = "IRISF_CODE",
+dep <- asf_dep(fond,
+               id = "IRISF_CODE", 
                keep = 0.05)
 
 # Creation du fond des irisr a partir des irisf
 fond_aggreg <- asf_fond(fond, 
-                        tabl,
+                        tabl, 
                         by = "IRISF_CODE", 
                         maille = "IRISrS_CODE") 
 
