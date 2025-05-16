@@ -23,11 +23,6 @@ tabl <- mar$ar02$d.irisr.pass
 fond <- asf_drom(fond, 
                  id = "IRISF_CODE")
 
-# Creation des limites departementales
-dep <- asf_dep(fond,
-               id = "IRISF_CODE", 
-               keep = 0.05)
-
 # Creation du fond des irisr a partir des irisf
 fond_aggreg <- asf_fond(fond, 
                         tabl, 
@@ -40,6 +35,7 @@ z <- asf_zoom(fond_aggreg,
 
 zoom <- z$zooms
 label <- z$labels
+point <- z$points
 
 # Simplification des geometries du fond de carte
 fond_simply <- asf_simplify(fond_aggreg)
@@ -58,25 +54,35 @@ data_aggreg <- asf_data(data,
 
 
 # Jointure --------------------------------------------------------------------
-fondata <- asf_fondata(data_aggreg, 
-                       fond_simply, 
-                       zoom, 
-                       id = c("IRISrS_CODE", "IRISrS_CODE"))
+fondata <- asf_fondata(fond_simply,
+                       zoom,
+                       data_aggreg,
+                       by = "IRISrS_CODE")
 
 
 # Creation de cartes ----------------------------------------------------------
+# Creation des limites departementales
+dep <- fond
+dep$DEP_CODE <- substr(dep$IRISF_CODE, 1, 2)
+dep <- asf_borders(dep,
+                   by = "DEP_CODE", 
+                   keep = 0.05)
+
 mf_map(fondata, 
        var = "C20_POP15P_CS6", 
        type = "choro", 
        nbreaks = 6, 
        border = NA)
 
+mf_map(point, 
+       add = TRUE)
+
 mf_label(label, 
-         var = "nom", 
+         var = "label", 
          cex = 0.8)
 
 mf_map(dep, 
-       col = "white", 
+       col = "#ffffff", 
        lwd = 0.5, 
        add = TRUE)
 
@@ -97,21 +103,20 @@ tabl <- mar$ar02$d.irisr.app
 tmp <- merge(tmp, tabl, by = "IRISrD_CODE", all.x = TRUE)
 tmp <- tmp[, c(1, 5:14, 36:39)]
 
-asf_plotypo(data = tmp,
-            vars = c(4:11),
-            typo = "TAAV2017", 
-            order_vars = c(1:6, 8, 7), 
-            order_typo = c("5", "1", "2", "3", "4", "0"))
+asf_plot_typo(tmp,
+              vars = c(4:11),
+              typo = "TAAV2017", 
+              order.v = c(1:6, 8, 7), 
+              order.t = c("5", "1", "2", "3", "4", "0")
+              )
 
-asf_plotvar(data = tmp,
-            vars = c(4:11),
-            typo = "TAAV2017", 
-            order_vars = c(1:6, 8, 7),
-            order_typo = c("5", "1", "2", "3", "4", "0"))
+asf_plot_vars(tmp,
+              vars = c(4:11),
+              typo = "TAAV2017", 
+              order.v = c(1:6, 8, 7),
+              order.t = c("5", "1", "2", "3", "4", "0")
+              )
 
-asf_plotvar(data = tmp,
-            vars = c(4),
-            typo = "TAAV2017")
-
-
-
+asf_plot_vars(tmp,
+              vars = c(4),
+              typo = "TAAV2017")

@@ -12,6 +12,7 @@ install.packages("mapsf")
 install.packages("readxl")
 install.packages("rmapshaper")
 install.packages("sf")
+install.packages("tinytex")
 
 
 install.packages("mapinsetr", repos = "https://riatelab.r-universe.dev")
