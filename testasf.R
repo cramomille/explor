@@ -9,6 +9,71 @@ library(mapsf)
 library(asf)
 
 
+mar <- asf_mar()
+
+sf.irisf <- mar$ar01$sf.irisf
+sf.comf <- mar$ar01$sf.comf
+
+d.comf.pass <- mar$ar01$d.comf.pass
+d.irisf.pass <- mar$ar01$d.irisf.pass
+d.comf.app <- mar$ar01$d.comf.app
+
+tabl <- merge(d.irisf.pass, d.comf.pass, by = "COMF_CODE", all = TRUE)
+tabl <- tabl[, c(3:5, 7, 1, 10)]
+
+tmp <- tabl[apply(is.na(tabl), 1, any), ]
+
+
+tabl <- merge(tabl, d.comf.app[, -c(1, 3)], by = "COMF_CODE", all = TRUE)
+
+tabl1 <- tabl[, c(2:5, 1, 6:23)]
+
+rm(sf.irisf,
+   sf.comf,
+   d.comf.pass,
+   d.irisf.pass,
+   d.comf.app,
+   tabl,
+   tmp)
+
+
+###############################################################################
+
+sf.irisr.d <- mar$ar02$sf.irisr.d
+sf.irisr.s <- mar$ar02$sf.irisr.s
+
+d.irisr.pass <- mar$ar02$d.irisr.pass
+d.irisr.app <- mar$ar02$d.irisr.app
+
+tabl <- merge(d.irisr.pass, d.irisr.app[, -c(3)], by = "IRISrD_CODE")
+tabl2 <- tabl[, c(3:7, 1, 8, 12, 13)]
+
+
+tmp <- tabl[, c(
+  "OM_CODE",
+  
+  "EPCI", 
+  "NATURE_EPCI",
+  
+  "ARR",    
+  "CV",             
+  "UU2020",         
+  "TUU2017",          
+  "TDUU2017",         
+  "BV2022",        
+  "ZE2020",
+  
+  "AAV2020",          
+  "TAAV2017",         
+  "TDAAV2017",        
+  "CATEAAV2020",
+  
+  "DEP",
+  "REG"
+  )]
+
+names(tabl)
+
 ###############################################################################
 ######################################## TEST MAILLAGE COMPOSITE D'ALIETTE ROUX
 
@@ -121,4 +186,63 @@ asf_plot_vars(tmp,
               vars = c(4),
               typo = "TAAV2017"
               )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
