@@ -9,15 +9,13 @@ library(mapsf)
 library(asf)
 
 
-###############################################################################
-######################################## TEST MAILLAGE COMPOSITE D'ALIETTE ROUX
-
 # Telechargement des objets d'Aliette deposes sur le sharedocs
 mar <- asf_mar()
 
+
 # Fond de carte ---------------------------------------------------------------
-fond <- mar$ar01$sf.irisf
-tabl <- mar$ar02$d.irisr.pass
+fond <- mar$sf
+tabl <- mar$r
 
 # Repositionnement des DROM
 fond <- asf_drom(fond, 
@@ -121,63 +119,3 @@ asf_plot_vars(tmp,
               vars = c(4),
               typo = "TAAV2017"
               )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
