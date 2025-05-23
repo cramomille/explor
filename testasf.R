@@ -14,21 +14,21 @@ mar <- asf_mar()
 
 
 # Fond de carte ---------------------------------------------------------------
-fond <- mar$sf
+irisf <- mar$sf
 tabl <- mar$r
 
 # Repositionnement des DROM
-fond <- asf_drom(fond, 
-                 id = "IRISF_CODE")
+irisf <- asf_drom(irisf, 
+                  id = "IRISF_CODE")
 
 # Creation du fond des irisr a partir des irisf
-fond_aggreg <- asf_fond(fond, 
-                        tabl, 
-                        by = "IRISF_CODE", 
-                        maille = "IRISrS_CODE") 
+irisr <- asf_fond(irisf, 
+                  tabl, 
+                  by = "IRISF_CODE", 
+                  maille = "IRISrS_CODE") 
 
 # Creation de zooms
-z <- asf_zoom(fond_aggreg, 
+z <- asf_zoom(irisr, 
               places = c("Paris", "Avignon", "Bergerac", "Annecy"))
 
 zoom <- z$zooms
@@ -36,36 +36,40 @@ label <- z$labels
 point <- z$points
 
 # Simplification des geometries du fond de carte
-fond_simply <- asf_simplify(fond_aggreg)
+irisr_simply <- asf_simplify(irisr)
 
 
 # Data ------------------------------------------------------------------------
-data <- mar$data$d.datatest
+iris_data <- read.csv("input/csp_2020.csv")
 
-data_aggreg <- asf_data(data, 
-                        tabl, 
-                        by.x = "IRIS",
-                        by.y = "IRIS_CODE", 
-                        maille = "IRISrS_CODE",
-                        vars = c(4:13), 
-                        funs = c("sum"))
+irisr_data <- asf_data(iris_data, 
+                       tabl, 
+                       by.x = "IRIS",
+                       by.y = "IRIS_CODE", 
+                       maille = "IRISrS_CODE",
+                       vars = c(4:13), 
+                       funs = c("sum"))
 
 
 # Jointure --------------------------------------------------------------------
-fondata <- asf_fondata(fond_simply,
+fondata <- asf_fondata(irisr_simply,
                        zoom,
-                       data_aggreg,
+                       irisr_data,
                        by = "IRISrS_CODE")
 
 
 # Creation de cartes ----------------------------------------------------------
 # Creation des limites departementales
-dep <- fond
-dep$DEP_CODE <- substr(dep$IRISF_CODE, 1, 2)
-dep <- asf_borders(dep,
+irisf$DEP_CODE <- substr(irisf$IRISF_CODE, 1, 2)
+
+dep <- asf_borders(irisf,
                    by = "DEP_CODE", 
                    keep = 0.05)
 
+# Choix d'une palette de couleurs
+pal <- asf_palette("kelp")
+
+# Utilisation du package mapsf
 mf_map(fondata, 
        var = "C20_POP15P_CS6", 
        type = "choro", 
@@ -88,8 +92,9 @@ mf_map(dep,
 # Creation de graphiques ------------------------------------------------------
 mar <- asf_mar(sf = FALSE)
 
-data <- mar$data$d.datatest
-tabl <- mar$ar01$d.irisf.pass
+data <- read.csv("input/csp_2020.csv")
+tabl <- mar$r
+
 tmp <- merge(data, tabl, by.x = "IRIS", by.y = "IRIS_CODE", all.x = TRUE) 
 tmp <- tmp[, c(1, 15, 4:13)]
 
