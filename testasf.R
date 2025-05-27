@@ -4,10 +4,10 @@
 #                                                                antoine beroud
 #                                                                    avril 2025
 
+library(sf)
 library(mapsf)
 library(asf)
 
-# Telechargement des objets d'Aliette deposes sur le sharedocs
 mar <- asf_mar()
 
 # Fond de carte ---------------------------------------------------------------
