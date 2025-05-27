@@ -205,7 +205,7 @@ names(irisr)[9] <- "COMR_LIB"
 
 irisr <- irisr[, c(
   "IRIS_CODE",
-  # "IRISF_CODE",
+  "IRISF_CODE",
   "IRISrS_CODE",
   "IRISrS_LIB",
   "IRISrD_CODE",
@@ -234,13 +234,17 @@ irisr <- irisr[, c(
 rm(list = setdiff(ls(), c("mar", "comf", "comr", "irisf", "irisr")))
 
 ####################################################################### EXPORTS
+library(sf)
+
 comf <- comf[order(comf$COM_CODE), ]
 comr <- comr[order(comr$COM_CODE), ]
 irisf <- irisf[order(irisf$IRIS_CODE), ]
 irisr <- irisr[order(irisr$IRIS_CODE), ]
 
 sf.irisf <- mar$ar01$sf.irisf
-sf.irisf <- sf.irisf[, c(1, 2)]
+sf.irisf <- sf.irisf[, c(1,2)]
 st_write(sf.irisf, "sf.irisf.gpkg")
-write.csv(tabl1, "df.tabl_irisf.csv")
-write.csv(tabl2, "df.tabl_irisr.csv")
+write.csv(comf, "df.comf.csv")
+write.csv(comr, "df.comr.csv")
+write.csv(irisf, "df.irisf.csv")
+write.csv(irisr, "df.irisr.csv")
