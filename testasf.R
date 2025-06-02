@@ -117,3 +117,5 @@ asf_plot_vars(tmp,
               typo = "TAAV2017",
               pal = pal
               )
+
+
