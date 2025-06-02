@@ -236,6 +236,15 @@ rm(list = setdiff(ls(), c("mar", "comf", "comr", "irisf", "irisr")))
 ####################################################################### EXPORTS
 library(sf)
 
+comf[] <- lapply(comf, as.character)
+str(comf)
+comr[] <- lapply(comr, as.character)
+str(comr)
+irisf[] <- lapply(irisf, as.character)
+str(irisf)
+irisr[] <- lapply(irisr, as.character)
+str(irisr)
+
 comf <- comf[order(comf$COM_CODE), ]
 comr <- comr[order(comr$COM_CODE), ]
 irisf <- irisf[order(irisf$IRIS_CODE), ]
