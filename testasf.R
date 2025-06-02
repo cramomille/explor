@@ -59,12 +59,10 @@ fondata <- asf_fondata(irisr_simply,
 # Creation des limites departementales
 irisf$DEP_CODE <- substr(irisf$IRISF_CODE, 1, 2)
 
-dep <- asf_borders(irisf,
-                   by = "DEP_CODE", 
-                   keep = 0.05)
+dep <- asf_borders(irisf, by = "DEP_CODE", keep = 0.1)
 
 # Choix d'une palette de couleurs
-pal <- asf_palette(pal = "berry")
+pal <- asf_palette("seq")
 
 # Utilisation du package mapsf
 mf_map(fondata, 
@@ -80,6 +78,7 @@ mf_map(dep,
        add = TRUE)
 
 mf_map(point, 
+       col = "red",
        add = TRUE)
 
 mf_label(label, 
