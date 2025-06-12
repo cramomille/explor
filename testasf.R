@@ -8,13 +8,21 @@ library(sf)
 library(mapsf)
 library(asf)
 
+remove.packages("rmapshaper")
+remove.packages("mapinsetr")
+remove.packages("asf")
+
+remotes::install_git(url = "https://gitlab.huma-num.fr/atlas-social-de-la-france/asf")  
+
+
+
 mar <- asf_mar()
 
 # Fond de carte ---------------------------------------------------------------
 irisf <- mar$sf.irisf
 tabl <- mar$df.irisr
 
-# Repositionnement des DROM
+# Repositionnement des DROM 
 irisf <- asf_drom(irisf, 
                   id = "IRISF_CODE")
 
@@ -68,7 +76,7 @@ pal <- asf_palette("seq")
 mf_map(fondata, 
        var = "C20_POP15P_CS6", 
        type = "choro", 
-       nbreaks = 6, 
+       nbreaks = 9, 
        pal = pal,
        border = NA)
 
