@@ -15,7 +15,7 @@ library(asf)
 
 
 ###############################################################################
-############################################ CREATION DE FICHIERS .PARQUET TEST
+################################################# CREATION DE FICHIERS .PARQUET
 
 # Creation de fichiers de donnees test
 set.seed(123)
@@ -45,7 +45,7 @@ parquet_convert(sas = c("output/sas/data1.sas7bdat",
 
 
 ###############################################################################
-########################################### OUVERTURE DE FICHIERS .PARQUET TEST
+################################################ OUVERTURE DE FICHIERS .PARQUET
 
 # recuperation des noms d'un fichier parquet
 names <- parquet_colname(dir = "output/parquet/data1")
@@ -87,31 +87,119 @@ y <- dput(x) # test de cette fonction
 test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 
 
+###############################################################################
+###################################################### AUTOCORRELATION SPATIALE
+
+# Lecture du fond regroupe
+mar <- asf_mar()
+
+iris <- mar$sf.irisf
+tabl <- mar$df.irisr
+
+iris_drom <- asf_drom(iris, 
+                      id = "IRISF_CODE")
+
+tmp <- merge(iris_drom[, 1], 
+             tabl[, c(2, 7)], 
+             by = "IRISF_CODE")
+
+st_write(iris, "test1.gpkg")
+
+tmp <- aggregate(tmp,
+                 by = list(tmp$COMR_CODE),
+                 FUN = function(x) x[1])
+
+mf_map(tmp)
 
 
-data <- df
-var <- 1
-is.character(data[[var]])
-var <- "typo"
-is.character(data[[var]])
 
-# Selection des iris
-iris <- mar$geom$irisrs
-iris <- iris[, c(1,2,7)]
-colnames(iris) <- c("irisrs_code", "irisrs_lib", "p21_pop", "geometry")
-st_geometry(iris) <- "geometry"
+fond <- asf_fond(iris_drom, 
+                 tabl, 
+                 by = "IRISF_CODE", 
+                 maille = "COMR_CODE")
 
-# # Selection des iris de Mayotte
-# mayo <- mar$geom$irisf
-# mayo <- mayo[grepl("^976", mayo$IRISF_CODE), ]
-# mayo$P21_POP <- NA
-# mayo$P21_POP <- as.numeric(mayo$P21_POP)
-# mayo <- mayo[, c(1,2,7)]
-# colnames(mayo) <- c("irisrs_code", "irisrs_lib", "p21_pop", "geometry")
-# st_geometry(mayo) <- "geometry"
-# 
-# # Collage des deux objets sf/data.frames
-# fond <- rbind(iris, mayo)
 
-# Repositionnement des geometries des DROM
-fond <- asf_drom(iris, id = "irisrs_code")
+# Lecture des donnees
+mar_revenu <- read.csv("input/decile_revucm_comar.csv")
+
+# Joindre les données au fond de carte
+communes_sf <- merge(communes_sf, revenus_df, by.x = "INSEE_COM", by.y = "INSEE")
+
+
+
+
+
+
+
+library(spdep)
+
+# Créer les voisins avec contiguïté de Queen (voisinage 8)
+communes_nb <- poly2nb(communes_sf)
+
+# Convertir en matrice de pondération spatiale
+communes_listw <- nb2listw(communes_nb, style = "W", zero.policy = TRUE)
+
+
+
+
+
+
+moran.test(communes_sf$revenu_median, communes_listw, zero.policy = TRUE)
+
+
+local_moran <- localmoran(communes_sf$revenu_median, communes_listw, zero.policy = TRUE)
+
+# Ajouter les résultats à l'objet sf
+communes_sf$Ii <- local_moran[,1]     # indice de Moran local
+communes_sf$Z.Ii <- local_moran[,4]  # score z (standardisé)
+communes_sf$pval <- local_moran[,5]  # p-value
+
+
+
+
+library(ggplot2)
+
+# Par exemple : visualiser les valeurs significatives
+communes_sf$signif <- communes_sf$pval < 0.05
+
+ggplot(communes_sf) +
+  geom_sf(aes(fill = signif)) +
+  scale_fill_manual(values = c("grey80", "red"), labels = c("Non significatif", "Significatif")) +
+  labs(title = "Clusters de revenus médians (Moran local)", fill = "Significativité") +
+  theme_minimal()
+
+
+
+
+
+
+
+
+
+
+
+revenu_c <- scale(communes_sf$revenu_median)[,1]
+revenu_lag <- lag.listw(communes_listw, revenu_c)
+
+communes_sf$quad <- NA
+communes_sf$quad[revenu_c >= 0 & revenu_lag >= 0] <- "High-High"
+communes_sf$quad[revenu_c <= 0 & revenu_lag <= 0] <- "Low-Low"
+communes_sf$quad[revenu_c >= 0 & revenu_lag <= 0] <- "High-Low"
+communes_sf$quad[revenu_c <= 0 & revenu_lag >= 0] <- "Low-High"
+communes_sf$quad[communes_sf$pval > 0.05] <- "Non significatif"
+
+# Carte typologique
+ggplot(communes_sf) +
+  geom_sf(aes(fill = quad), color = NA) +
+  scale_fill_manual(values = c(
+    "High-High" = "darkred",
+    "Low-Low" = "darkblue",
+    "High-Low" = "orange",
+    "Low-High" = "lightblue",
+    "Non significatif" = "grey80"
+  )) +
+  labs(title = "Typologie des clusters LISA", fill = "Cluster") +
+  theme_minimal()
+
+
+
