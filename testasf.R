@@ -4,23 +4,24 @@
 #                                                                antoine beroud
 #                                                                    avril 2025
 
+# remove.packages("rmapshaper")
+# remove.packages("mapinsetr")
+remove.packages("asf")
+
+remotes::install_gitlab("atlas-social-de-la-france/asf",
+                        host = "gitlab.huma-num.fr",
+                        build_vignettes = TRUE)
+
 library(sf)
 library(mapsf)
 library(asf)
 
-remove.packages("rmapshaper")
-remove.packages("mapinsetr")
-remove.packages("asf")
-
-remotes::install_git(url = "https://gitlab.huma-num.fr/atlas-social-de-la-france/asf")  
-
-
-
-mar <- asf_mar()
 
 # Fond de carte ---------------------------------------------------------------
-irisf <- mar$sf.irisf
-tabl <- mar$df.irisr
+mar <- asf_mar(maille = "irisrs")
+
+irisf <- mar$geom
+tabl <- mar$tabl
 
 # Repositionnement des DROM 
 irisf <- asf_drom(irisf, 
@@ -76,7 +77,7 @@ pal <- asf_palette("seq")
 mf_map(fondata, 
        var = "C20_POP15P_CS6", 
        type = "choro", 
-       nbreaks = 9, 
+       nbreaks = 6, 
        pal = pal,
        border = NA)
 
@@ -95,14 +96,14 @@ mf_label(label,
 
 
 # Creation de graphiques ------------------------------------------------------
-mar <- asf_mar(geom = FALSE)
+tabl <- asf_mar(maille = "irisrs", 
+                geom = FALSE)
 
 data <- read.csv("input/csp_2020.csv")
-tabl <- mar$df.irisr
 
-tmp <- merge(data, tabl[, c(2, 21)], by.x = "IRIS", by.y = "IRIS_CODE", all.x = TRUE)
-pal <- asf_palette(pal = "spectra")
+tmp <- merge(data, tabl, by.x = "IRIS", by.y = "IRIS_CODE", all.x = TRUE)
 
+pal <- asf_palette(pal = "tulipe", nb = 8)
 asf_plot_typo(tmp,
               vars = c(6:13),
               typo = "TAAV2017", 
@@ -111,6 +112,7 @@ asf_plot_typo(tmp,
               pal = pal
               )
 
+pal <- asf_palette(pal = "tulipe", nb = 6)
 asf_plot_vars(tmp,
               vars = c(6:13),
               typo = "TAAV2017", 
@@ -119,6 +121,7 @@ asf_plot_vars(tmp,
               pal = pal
               )
 
+pal <- asf_palette(pal = "tulipe", nb = 6)
 asf_plot_vars(tmp,
               vars = c(6),
               typo = "TAAV2017",
