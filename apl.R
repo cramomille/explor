@@ -121,23 +121,7 @@ mf_label(label,
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+###############################################################################
 # Donnees sur le maillage des communes
 mar <- asf_mar(maille = "comf")
 
@@ -162,6 +146,8 @@ label <- z$labels
 
 
 data <- apl_2023
+data$coef1 <- data$`Population standardisée 2021 pour la médecine générale`
+data$coef2 <- data$`Population standardisée 2021 pour la médecine générale`
 
 data <- asf_data(d = data, 
                  t = tabl, 
@@ -169,15 +155,15 @@ data <- asf_data(d = data,
                  by.y = "COM_CODE", 
                  maille = "COMF_CODE", 
                  keep = "COMF_LIB", 
-                 vars = c(3, 5), 
-                 funs = c("median", "sum"))
+                 vars = c(3:8), 
+                 funs = c("prod1", "prod2", "sum", "sum", "coef1", "coef2"))
 
-fondata <- asf_fondata(f = fond,
-                       z = zoom,
+fondata <- asf_fondata(f = fond, 
+                       z = zoom, 
                        d = data, 
                        by = "COMF_CODE")
 
-
+st_write(fondata, "apl_mg_2023.gpkg")
 
 # Definition de la variable d'interet
 varname <- "APL aux médecins généralistes"
@@ -208,8 +194,3 @@ mf_label(label,
          var = "label", 
          col = "#000000", 
          font = 1)
-
-
-
-
-asf_plot_typo(d = data, vars = )
