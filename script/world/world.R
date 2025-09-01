@@ -65,39 +65,9 @@ graph(world, "ra", "country")
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 capitalism <- function(world, years = 1) {
   
-  # Categorisation pour la premiere fois après on reprend le resultat
+  # Categorisation pour la premiere fois apres on reprend le resultat
   world$gender_cat <- ifelse(world$gender < 45, "man",
                             ifelse(world$gender > 55, "woman", "autres"))
   world$race_cat <- ifelse(world$race < 65, "racisee", "blanche")

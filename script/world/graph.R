@@ -1,5 +1,8 @@
-graph <- function(df, xvar, yvar) {
-  # Convertir en facteur la variable yvar pour assurer les niveaux
+graph <- function(df, 
+                  xvar, 
+                  yvar) {
+  
+  # Convertion de la variable yvar en facteur pour assurer les niveaux
   if (!is.factor(df[[yvar]])) {
     df[[yvar]] <- as.factor(df[[yvar]])
   }
