@@ -76,9 +76,10 @@ rank_games <- function(dir = "games_results",
   
   # Conversion des densites en %
   h$counts <- h$density * 100 * diff(h$breaks)[1]
-  plot(h, 
+  plot(h,
+       ylim = c(0, 35),
        col = "lightblue", 
-       border = "white",
+       border = "black",
        main = sprintf("Distribution des scores (min = %d, max = %d)", min_s, max_s),
        xlab = "Scores", 
        ylab = "Pourcentages")
@@ -92,12 +93,12 @@ rank_games <- function(dir = "games_results",
                   plot = FALSE)
       h_j$counts <- h_j$counts / length(scores_j) * 100
       plot(h_j, 
-           col = rgb(1, 0, 0, 0.25), 
-           border = "white", 
+           col = rgb(1, 0, 0, 0.15), 
+           border = "black", 
            add = TRUE)
       legend("topright",
              legend = c("all", j),
-             fill = c("lightblue", rgb(1, 0, 0, 0.25)),
+             fill = c("lightblue", rgb(1, 0, 0, 0.15)),
              border = "white")
     }
   }
