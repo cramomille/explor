@@ -1,4 +1,3 @@
-
 # liste des communes pre-renseignees pour la fonction asf_zoom
 
 library(asf)

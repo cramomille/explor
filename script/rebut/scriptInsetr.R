@@ -214,9 +214,3 @@ st_write(borders_box, "DATA/GPKG/voronoi/output/borders_box.geojson")
 
 boxes$target <- NULL
 st_write(boxes, "DATA/GPKG/voronoi/output//boxes.shp")
-# Facteurs d'agrandissement / réduction
-# Guadeloupe 0.84
-# Martinique 0.99
-# Guyane 0.28
-# Mayotte 1.29
-# Réunion 0.89
