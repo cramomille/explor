@@ -6,11 +6,11 @@
 
 # remove.packages("rmapshaper")
 # remove.packages("mapinsetr")
-remove.packages("asf")
+# remove.packages("asf")
 
-remotes::install_gitlab("atlas-social-de-la-france/asf",
-                        host = "gitlab.huma-num.fr",
-                        build_vignettes = TRUE)
+# remotes::install_gitlab("atlas-social-de-la-france/asf",
+#                         host = "gitlab.huma-num.fr",
+#                         build_vignettes = TRUE)
 
 library(sf)
 library(mapsf)
@@ -28,7 +28,7 @@ irisf <- asf_drom(irisf,
                   id = "IRISF_CODE")
 
 # Creation du fond des irisr a partir des irisf
-irisr <- asf_fond(irisf, 
+irisr <- asf_fond(irisf,   
                   tabl, 
                   by = "IRISF_CODE", 
                   maille = "IRISrS_CODE") 
