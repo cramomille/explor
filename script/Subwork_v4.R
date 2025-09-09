@@ -466,7 +466,6 @@ tab$P_T_CP2_T632.Agri <- tab$CP2_T632.Agri/tab$BS18_S_T*100
 head(tab)
 
 # Construction du tableau final des % (à faire ensuite : ET) avec gt [trouver un moyen de calculer facilement la moyenne nationale]
-
 Tab1 <- select(tab, clust2, starts_with("P_T_"))
 
 Tab1 <- gt(Tab1, rowname_col = "clust2") %>%
