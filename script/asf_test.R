@@ -17,8 +17,135 @@ library(mapsf)
 library(asf)
 
 
+
+di_2020 <- read.csv("output/datatest/csp_i_2020.csv")[, -1]
+di_2023 <- read.csv("output/datatest/csp_i_2023.csv")[, -1]
+dc_2020 <- read.csv("output/datatest/csp_c_2020.csv")[, -1]
+dc_2023 <- read.csv("output/datatest/csp_c_2023.csv")[, -1]
+
+f <- asf_maa(geom = TRUE)
+
+f[[1]][grepl("^976", f[[1]])] <- NA
+mf_map(f)
+
+
+f <- asf_drum(f, id = "IRISF_CODE")
+f <- asf_simplify(f)
+
+
+
+# .ixxxx_to_i2023 ----
+x <- di_2020
+t <- asf_maa(md = "iris", ma = "irisf")
+y <- asf_data(x, t, by = "IRIS_CODE",
+              maille = "IRISF_CODE",
+              vars = c(2:11),
+              funs = "sum")
+
+sum(x$P20_POP) - sum(y$P20_POP)
+
+z <- asf_fondata(f = f, d = y, by = "IRISF_CODE")
+z$test <- z$C20_POP15P_CS3 / z$C20_POP15P * 100
+
+mf_map(z,
+       var = "test",
+       type = "choro",
+       nbreaks = 6,
+       border = NA)
+       
+
+# .ixxxx_to_i2023r ----
+x <- di_2020
+t <- asf_maa(md = "iris", ma = "irisr")
+y <- asf_data(x, t, by = "IRIS_CODE",
+              maille = "IRISrD_CODE",
+              vars = c(2:11),
+              funs = "sum")
+
+sum(x$P20_POP) - sum(y$P20_POP)
+
+
+
+
+
+
+
+
+
+# .ixxxx_to_c2023  ----
+t <- asf_maa(md = "iris", ma = "comf")
+
+# .ixxxx_to_c2023r ----
+t <- asf_maa(md = "iris", ma = "comr")
+
+# .i2023_to_i2023r ----
+t <- asf_maa(md = "iris", ma = "irisr", a2023 = TRUE)
+
+# .i2023_to_c2023  ----
+t <- asf_maa(md = "iris", ma = "comf", a2023 = TRUE)
+
+# .i2023_to_c2023r ----
+t <- asf_maa(md = "iris", ma = "comr", a2023 = TRUE)
+
+
+
+# .cxxxx_to_c2023  ----
+t <- asf_maa(md = "com", ma = "comf")
+
+# .cxxxx_to_c2023r ----
+t <- asf_maa(md = "com", ma = "comr")
+
+# .c2023_to_c2023r ----
+t <- asf_maa(md = "com", ma = "comr", a2023 = TRUE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+t <- asf_maa(md = "iris", ma = "irisr")
+
+y <- asf_data(x, 
+              t, 
+              by.x = "IRIS", 
+              by.y = "IRIS_CODE", 
+              maille = "IRISrD_CODE", 
+              vars = c(4:13), 
+              funs = "sum")
+
+sum(x$P20_POP, na.rm = TRUE)
+sum(y$P20_POP, na.rm = TRUE)
+
+
+
+
+
+
+
 # Fond de carte ---------------------------------------------------------------
-mar <- asf_mar(maille = "comr")
+mar <- asf_maa(md = "iris", ma = "comr", geom = TRUE)
 
 tabl <- mar$tabl
 geom <- mar$geom
