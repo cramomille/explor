@@ -76,11 +76,12 @@ asf_maa <- function(md = NULL,
     i_i2023r <- merge(i_i2023[, c("IRIS_CODE", "IRISF_CODE")],
                       d.irisr.pass[, c("IRISF_CODE", "IRISrD_CODE", "IRISrD_LIB")],
                       by = "IRISF_CODE")
+    
     i_i2023r <- merge(i_i2023r,
                       d.irisr.app[, -2],
                       by = "IRISrD_CODE")
     
-    i_i2023r <- i_i2023r[, c("IRIS_CODE", "IRISrD_CODE", "IRISrD_LIB", cols)]
+    i_i2023r <- i_i2023r[, c("IRIS_CODE", "IRISF_CODE", "IRISrD_CODE", "IRISrD_LIB", cols)]
     
     # Ajout Mayotte
     myt <- .add_mayotte(i_i2023, "IRISF_CODE", "IRISF_LIB", "IRISrD_CODE", "IRISrD_LIB")
@@ -138,7 +139,7 @@ asf_maa <- function(md = NULL,
                       d.irisr.app[, -2],
                       by = "IRISrD_CODE")
     
-    i_i2023r <- i_i2023r[, c("IRIS_CODE", "IRISrS_CODE", "IRISrS_LIB", cols)]
+    i_i2023r <- i_i2023r[, c("IRIS_CODE", "IRISF_CODE", "IRISrS_CODE", "IRISrS_LIB", cols)]
     
     # Ajout Mayotte
     myt <- .add_mayotte(i_i2023, "IRISF_CODE", "IRISF_LIB", "IRISrS_CODE", "IRISrS_LIB")
@@ -155,6 +156,7 @@ asf_maa <- function(md = NULL,
     i_c2023 <- .ixxxx_to_c2023()
     
     i_c2023 <- i_c2023[i_c2023$IRIS_CODE == i_i2023$IRISF_CODE, ]
+    colnames(i_c2023)[1] <- "IRISF_CODE"
     
     return(i_c2023)
   }
@@ -163,6 +165,7 @@ asf_maa <- function(md = NULL,
     i_c2023r <- .ixxxx_to_c2023r()
     
     i_c2023r <- i_c2023r[i_c2023r$IRIS_CODE == i_i2023$IRISF_CODE, ]
+    colnames(i_c2023r)[1] <- "IRISF_CODE"
     
     return(i_c2023r)
   }
@@ -235,6 +238,7 @@ asf_maa <- function(md = NULL,
     c_c2023r <- .cxxxx_to_c2023r()
     
     c_c2023r <- c_c2023r[c_c2023r$COM_CODE == c_c2023$COMF_CODE, ]
+    colnames(c_c2023r)[1] <- "COMF_CODE"
     
     return(c_c2023r)
   }
