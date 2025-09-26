@@ -23,22 +23,12 @@ di_2023 <- read.csv("output/datatest/csp_i_2023.csv")[, -1]
 dc_2020 <- read.csv("output/datatest/csp_c_2020.csv")[, -1]
 dc_2023 <- read.csv("output/datatest/csp_c_2023.csv")[, -1]
 
-
-system.time(
-  f <- asf_maa(geom = TRUE)
-)
-
-f[[1]][grepl("^976", f[[1]])] <- NA
-
-system.time(
-  f <- asf_drom(f, id = "IRISF_CODE")
-)
-
-system.time(
-  f <- asf_simplify(f)
-)
+f <- asf_maa(geom = TRUE)
+f <- asf_drom(f, id = "IRISF_CODE")
+f <- asf_simplify(f)
 
 mf_map(f)
+
 
 # .ixxxx_to_i2023 ----
 x <- di_2020
