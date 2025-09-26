@@ -17,7 +17,6 @@ library(sf)
 library(mapsf)
 library(asf)
 
-
 di_2020 <- read.csv("output/datatest/csp_i_2020.csv")[, -1]
 di_2023 <- read.csv("output/datatest/csp_i_2023.csv")[, -1]
 dc_2020 <- read.csv("output/datatest/csp_c_2020.csv")[, -1]
@@ -28,6 +27,7 @@ f <- asf_drom(f, id = "IRISF_CODE")
 f <- asf_simplify(f)
 
 mf_map(f)
+
 
 
 # .ixxxx_to_i2023 ----
@@ -50,6 +50,7 @@ mf_map(z,
        border = NA)
        
 
+
 # .ixxxx_to_i2023r ----
 x <- di_2020
 t <- asf_maa(md = "iris", ma = "irisr")
@@ -60,22 +61,108 @@ y <- asf_data(x, t, by = "IRIS_CODE",
 
 sum(x$P20_POP) - sum(y$P20_POP)
 
+g <- asf_fond(f, t, by = "IRISF_CODE", maille = "IRISrD_CODE")
 
+z <- asf_fondata(f = g, d = y, by = "IRISrD_CODE")
+z$test <- z$C20_POP15P_CS3 / z$C20_POP15P * 100
 
-
-
-
+mf_map(z,
+       var = "test",
+       type = "choro",
+       nbreaks = 6,
+       border = NA)
 
 
 
 # .ixxxx_to_c2023  ----
+x <- di_2020
 t <- asf_maa(md = "iris", ma = "comf")
+y <- asf_data(x, t, by = "IRIS_CODE",
+              maille = "COMF_CODE",
+              vars = c(2:11),
+              funs = "sum")
+
+sum(x$P20_POP) - sum(y$P20_POP)
+
+f <- asf_fond(f, maille = "COMF_CODE")
+
+z <- asf_fondata(f = f, d = y, by = "COMF_CODE")
+z$test <- z$C20_POP15P_CS3 / z$C20_POP15P * 100
+
+mf_map(z,
+       var = "test",
+       type = "choro",
+       nbreaks = 6,
+       border = NA)
+
+
 
 # .ixxxx_to_c2023r ----
+x <- di_2020
 t <- asf_maa(md = "iris", ma = "comr")
+y <- asf_data(x, t, by = "IRIS_CODE",
+              maille = "COMR_CODE",
+              vars = c(2:11),
+              funs = "sum")
+
+sum(x$P20_POP) - sum(y$P20_POP)
+
+g <- asf_fond(f, t, by = "COMF_CODE", maille = "COMR_CODE")
+
+z <- asf_fondata(f = g, d = y, by = "COMR_CODE")
+z$test <- z$C20_POP15P_CS3 / z$C20_POP15P * 100
+
+mf_map(z,
+       var = "test",
+       type = "choro",
+       nbreaks = 6,
+       border = NA)
+
+
 
 # .i2023_to_i2023r ----
+x <- di_2023
 t <- asf_maa(md = "iris", ma = "irisr", a2023 = TRUE)
+y <- asf_data(x, t, 
+              by = "IRISF_CODE",
+              maille = "IRISrS_CODE",
+              vars = c(2:11),
+              funs = "sum")
+
+sum(x$P20_POP) - sum(y$P20_POP)
+
+g <- asf_fond(f, t, by = "IRISF_CODE", maille = "IRISrS_CODE")
+
+z <- asf_fondata(f = g, d = y, by = "IRISrS_CODE")
+z$test <- z$C20_POP15P_CS3 / z$C20_POP15P * 100
+
+mf_map(z,
+       var = "test",
+       type = "choro",
+       nbreaks = 6,
+       border = NA)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # .i2023_to_c2023  ----
 t <- asf_maa(md = "iris", ma = "comf", a2023 = TRUE)
