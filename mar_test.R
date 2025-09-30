@@ -29,7 +29,7 @@
 #'                   ma = "comr")
 #'
 #' @export
-asf_maa <- function(md = NULL,
+asf_mar <- function(md = NULL,
                     ma = NULL,
                     a2023 = FALSE,
                     geom = FALSE,
@@ -53,6 +53,7 @@ asf_maa <- function(md = NULL,
     return(myt)
   }
   
+  # IRIS d'une annee autre que 2023 vers les IRIS de 2023
   .ixxxx_to_i2023  <- function() {
     d.irisf.pass <- .read_csv_verbose(path_d.irisf.pass, "d.irisf.pass")
     d.comf.app   <- .read_csv_verbose(path_d.comf.app, "d.comf.app")
@@ -68,6 +69,8 @@ asf_maa <- function(md = NULL,
     
     return(i_i2023)
   }
+  
+  # IRIS d'une annee autre que 2023 vers les IRIS de 2023 regroupes
   .ixxxx_to_i2023r <- function() {
     d.irisr.pass <- .read_csv_verbose(path_d.irisr.pass, "d.irisr.pass")
     d.irisr.app  <- .read_csv_verbose(path_d.irisr.app, "d.irisr.app")
@@ -93,6 +96,8 @@ asf_maa <- function(md = NULL,
     
     return(i_i2023r)
   }
+  
+  # IRIS d'une annee autre que 2023 vers les communes de 2023
   .ixxxx_to_c2023  <- function() {
     d.irisf.pass <- .read_csv_verbose(path_d.irisf.pass, "d.irisf.pass")
     d.comf.app   <- .read_csv_verbose(path_d.comf.app, "d.comf.app")
@@ -108,6 +113,8 @@ asf_maa <- function(md = NULL,
     
     return(i_c2023)
   }
+  
+  # IRIS d'une annee autre que 2023 vers les communes de 2023 regroupees
   .ixxxx_to_c2023r <- function() {
     i_c2023 <- .ixxxx_to_c2023()
     c_c2023r <- .cxxxx_to_c2023r()
@@ -127,6 +134,8 @@ asf_maa <- function(md = NULL,
     return(i_c2023r)
   }
   
+  
+  # IRIS de 2023 vers les IRIS de 2023 regroupes
   .i2023_to_i2023r <- function() {
     d.irisr.pass <- .read_csv_verbose(path_d.irisr.pass, "d.irisr.pass")
     d.irisr.app  <- .read_csv_verbose(path_d.irisr.app, "d.irisr.app")
@@ -151,6 +160,8 @@ asf_maa <- function(md = NULL,
     
     return(i_i2023r)
   }
+  
+  # IRIS de 2023 vers les communes de 2023
   .i2023_to_c2023  <- function() {
     i_i2023 <- .ixxxx_to_i2023()
     i_c2023 <- .ixxxx_to_c2023()
@@ -160,6 +171,8 @@ asf_maa <- function(md = NULL,
     
     return(i_c2023)
   }
+  
+  # IRIS de 2023 vers les communes de 2023 regroupees
   .i2023_to_c2023r <- function() {
     i_i2023 <- .ixxxx_to_i2023()
     i_c2023r <- .ixxxx_to_c2023r()
@@ -170,6 +183,8 @@ asf_maa <- function(md = NULL,
     return(i_c2023r)
   }
   
+  
+  # Communes d'une annee autre que 2023 vers les communes de 2023
   .cxxxx_to_c2023  <- function() { 
     d.comf.app <- .read_csv_verbose(path_d.comf.app, "d.comf.app")
     d.comf.pass <- .read_csv_verbose(path_d.comf.pass, "d.comf.pass")
@@ -189,6 +204,8 @@ asf_maa <- function(md = NULL,
     
     return(c_c2023)
   }
+  
+  # Communes d'une annee autre que 2023 vers les communes de 2023 regroupees
   .cxxxx_to_c2023r <- function() { 
     d.irisr.app <- .read_csv_verbose(path_d.irisr.app, "d.irisr.app")
     d.comf.pass <- .read_csv_verbose(path_d.comf.pass, "d.comf.pass")
@@ -233,6 +250,8 @@ asf_maa <- function(md = NULL,
     return(c_c2023r)
   }
   
+  
+  # Communes de 2023 vers les communes de 2023 regroupees
   .c2023_to_c2023r <- function() {
     c_c2023 <- .cxxxx_to_c2023()
     c_c2023r <- .cxxxx_to_c2023r()
