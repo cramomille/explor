@@ -18,7 +18,7 @@
 #                         host = "gitlab.huma-num.fr",
 #                         build_vignettes = TRUE)  
 # 
-# # install.packages("devtools") pour les donnees Subwork
+# install.packages("devtools") # pour les donnees Subwork
 # devtools::install_github("alietteroux/subwork")
 
 library(sf)
@@ -32,7 +32,7 @@ library(RColorBrewer)
 # library(rgdal)
 library(SpatialPosition)
 library(FactoMineR)
-library(factoextra) 
+library(factoextra)
 library(Factoshiny)
 library(corrplot)
 library(subwork)
@@ -53,82 +53,45 @@ FT810.data <- import(code = "FT810", type = "data")
 data.cp2 <- select(FT810.data, IRIS, IRIS_LIB, COM, BS18_S_T, BS18_S_T_CP1_C2.Arti, starts_with("BS18_S_T_CP2"))
 
 
-
 # IMPORT DU MAILLAGE ---------------------------------------------------------- 
-# mise a jour juillet 2025 avec nouveau format de la fonction d'Aliette
+# Mise a jour juillet 2025 avec nouveau format de la fonction d'Aliette
 
 # Donnees sur le maillage des IRIS regroupees
-tabl <- asf_mar(maille = "irisf", geom = FALSE)
-
-# Jointure du code des iris de reference (irisf) avec les iris subwork et les donnees data.cp2 associees
-dataf <- merge(tabl[, c("IRIS_CODE", "IRISF_CODE")], data.cp2, 
-               by.x = "IRIS_CODE", by.y = "IRIS")
-
-# Verification du nombre d'iris differentes : 48638 puis 48637
-sum(length(unique(data.cp2$IRIS)))
-sum(length(unique(dataf$IRIS_CODE))) # je perds 1 IRIS...
-
-# On perd l'IRIS de la commune de Plottes (71353)
-id <- setdiff(data.cp2$IRIS, dataf$IRIS_CODE)
-data.cp2$IRIS_LIB[data.cp2$IRIS == id]
-
-
-# Code des iris regroupes pour une analyse synchronique
-tabl <- asf_mar(maille = "irisrs", geom = FALSE)
-
-# Jointure du code des iris de reference (irisf) avec les iris regroupes (irisrs)
-datar <- merge(tabl[, c("IRISF_CODE", "IRISrS_CODE", "IRISrS_LIB")], dataf, 
-               by = "IRISF_CODE")
-
-sum(data.cp2$BS18_S_T_CP1_C2.Arti, na.rm = TRUE)
-sum(dataf$BS18_S_T_CP1_C2.Arti, na.rm = TRUE)
-sum(datar$BS18_S_T_CP1_C2.Arti, na.rm = TRUE)
-
-# Voir les lignes en doublon sur la colonne id
-doublon <- datar[duplicated(datar$IRIS_CODE) | duplicated(datar$IRIS_CODE, fromLast = TRUE), ]
-
-# Suppression des doublons
-datar <- datar[!duplicated(datar$IRIS_CODE), ]
-
-sum(data.cp2$BS18_S_T_CP1_C2.Arti, na.rm = TRUE)
-sum(dataf$BS18_S_T_CP1_C2.Arti, na.rm = TRUE)
-sum(datar$BS18_S_T_CP1_C2.Arti, na.rm = TRUE)
-
-
-
-# AGREGATION DES DONNEES ------------------------------------------------------
-# Agregation simple
-sum <- rowsum(datar[, c(7:35)], group = datar$IRISrS_CODE, na.rm = TRUE)
-datar <- data.frame(IRISrS_CODE = rownames(sum), sum, row.names = NULL)
-
-sum(datar$BS18_S_T_CP1_C2.Arti, na.rm = TRUE)
-
-
-
-# JOINTURE AVEC LE FOND GEOGRAPHIQUE ------------------------------------------
-# Import du fond d'Aliette a partir du package asf
-mar <- asf_mar(maille = "irisrs")
+mar <- asf_mar(md = "iris", ma = "irisr", geom = TRUE)
 
 tabl <- mar$tabl
 geom <- mar$geom
 
-# Agregation des iris en IRIS regroupees S
+datar <- asf_data(data.cp2, 
+                  tabl, 
+                  by.x = "IRIS", 
+                  by.y = "IRIS_CODE", 
+                  maille = "IRISrD_CODE", vars = c(4:32), 
+                  funs = "sum")
+
+# Verification des sommes calculees
+sum(data.cp2$BS18_S_T, na.rm = TRUE) - sum(datar$BS18_S_T, na.rm = TRUE) # les habitantes de Plottes
+sum(data$BS18_S_T, na.rm = TRUE) - sum(datar$BS18_S_T, na.rm = TRUE)
+
+
+# JOINTURE AVEC LE FOND GEOGRAPHIQUE ------------------------------------------
+# Agregation des iris en iris regroupes
 fond <- asf_fond(geom, 
                  tabl, 
                  by = "IRISF_CODE", 
-                 maille = "IRISrS_CODE", 
-                 keep = c("IRISrS_LIB", "DEP", "OM_CODE"))
+                 maille = "IRISrD_CODE", 
+                 keep = c("IRISrD_LIB", "DEP", "OM_CODE"))
 
 # Repositionnement des DROM
 fond <- asf_drom(fond, 
-                 id = "IRISrS_CODE")
+                 id = "IRISrD_CODE")
 
-# Creation de zooms
-z <- asf_zoom(fond, 
-              places = c("4", "5"), 
-              r = 20000)
+# # Creation de zooms
+# z <- asf_zoom(fond, 
+#               places = c("4", "5"), 
+#               r = 20000)
 
-## A voir
+# # Creation de zooms
 z <- asf_zoom(fond,
               places = c("Paris", "Nantes", "Marseille", "Lyon"), 
               coords = c(5.721, 45.182), labels = "Grenoble", 
@@ -140,12 +103,11 @@ label <- z$labels
 # Recuperation des limites departementales
 dep <- asf_borders(f = fond, by = "DEP", keep = 0.01)
 
-
 # Jointure entre le fond et les donnees agregees
 fondata <- asf_fondata(f = fond,
                        z = zoom, 
                        d = datar, 
-                       by = "IRISrS_CODE")
+                       by = "IRISrD_CODE")
 
 variable.names(fondata)
 
@@ -259,14 +221,14 @@ summary(datar$verif.P) # verif ok car pas d'IS > 100 Mais 2 NA qui correspondent
 # ACP CP2 ---------------------------------------------------------------------
 
 ## Tableau ACP a partir de datar ----
-acp.cp2 <- select(datar,  IRISrS_CODE, starts_with("P_T_CP2")) |> 
-  column_to_rownames(var = "IRISrS_CODE")
+acp.cp2 <- select(datar,  IRISrD_CODE, starts_with("P_T_CP2")) |> 
+  column_to_rownames(var = "IRISrD_CODE")
 
 # note : 2 IRIS avec valeur NA : 940330111 (Fontenay sous bois) et 570320103 (?)
 ## version code Jean
 res.acp <- PCA(acp.cp2, graph=F)
 
-d.acp.res <- acp.cp2 |> rownames_to_column(var = "IRISrS_CODE") |> 
+d.acp.res <- acp.cp2 |> rownames_to_column(var = "IRISrD_CODE") |> 
   left_join(as.data.frame(res.acp$ind$coord) |> 
               rownames_to_column(var = "IRISrS_CODE"), by = "IRISrS_CODE")
 
