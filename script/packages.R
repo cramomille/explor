@@ -3,6 +3,7 @@ options(Ncpus = 4)
 
 install.packages("arrow")
 install.packages("assertthat")
+install.packages("devtools")
 install.packages("dplyr")
 install.packages("dbplyr")
 install.packages("duckdb")
