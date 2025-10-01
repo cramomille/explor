@@ -17,7 +17,6 @@ library(sf)
 library(mapsf)
 library(asf)
 
-
 # Fond de carte ---------------------------------------------------------------
 mar <- asf_mar(md = "iris", ma = "comr", geom = TRUE)
 
