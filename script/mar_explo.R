@@ -2,12 +2,106 @@
 
 
 
+t <- asf_ma(md = "iris_2023", 
+            ma = "iris_f")
 
 
 
 load("input/mar_metadata/donnees/AR03_maille_IRISr5.RData")
 
 
+###############################################################################
+.ixxxx_to_i2023r5 <- function() {
+  irisr.pass <- d.irisr5.pass
+  irisr.app <- d.irisr5.app.iris
+  i_i2023 <- .ixxxx_to_i2023()
+  
+  i_i2023r <- merge(i_i2023[, c("IRIS_CODE", "IRISF_CODE")],
+                    irisr.pass[, c("IRISF_CODE", "IRISr5_CODE", "IRISr5_LIB")],
+                    by = "IRISF_CODE")
+  
+  i_i2023r <- merge(i_i2023r,
+                    irisr.app[, -2],
+                    by = "IRISr5_CODE")
+  
+  i_i2023r <- i_i2023r[, c("IRIS_CODE", "IRISF_CODE", "IRISr5_CODE", "IRISr5_LIB", cols)]
+  
+  # Ajout Mayotte
+  myt <- .add_mayotte(i_i2023, "IRISF_CODE", "IRISF_LIB", "IRISr5_CODE", "IRISr5_LIB")
+  myt <- myt[, colnames(i_i2023r)]
+  i_i2023r <- rbind(i_i2023r, myt)
+  
+  i_i2023r[] <- lapply(i_i2023r, as.character)
+  i_i2023r <- i_i2023r[order(i_i2023r[[1]]), ]
+  
+  return(i_i2023r)
+}
+
+###############################################################################
+.ixxxx_to_c2023r5 <- function() {
+  i_c2023 <- .ixxxx_to_c2023()
+  c_c2023r <- .cxxxx_to_c2023r5()
+  
+  i_c2023$COM_CODE <- substr(i_c2023$IRIS_CODE, 1, 5)
+  i_c2023 <- i_c2023[, c("IRIS_CODE", "COM_CODE", "COMF_CODE")]
+  
+  i_c2023r <- merge(i_c2023,
+                    c_c2023r[, -2],
+                    by = "COM_CODE")
+  
+  i_c2023r <- i_c2023r[, -1]
+  
+  i_c2023r[] <- lapply(i_c2023r, as.character)
+  i_c2023r <- i_c2023r[order(i_c2023r[[1]]), ]
+  
+  return(i_c2023r)
+}
+
+
+###############################################################################
+.cxxxx_to_c2023r5 <- function() { 
+  irisr.app <- d.irisr5.app.iris
+  comf.pass <- .read_csv(path_comf.pass)
+  c_c2023 <- .cxxxx_to_c2023()
+  
+  id_list <- strsplit(irisr.app$COMF_CODE_MULTI, " \\| ")
+  id_tabl <- data.frame(
+    COMF_CODE = unlist(id_list),
+    COMR5_CODE = rep(irisr.app$COMF_CODE_MULTI, sapply(id_list, length))
+  )
+  id_tabl <- id_tabl[!duplicated(id_tabl$COMF_CODE), ]
+  
+  c_c2023r <- merge(comf.pass, 
+                    id_tabl, 
+                    by = "COMF_CODE", 
+                    all.x = TRUE)
+  
+  irisr.app <- irisr.app[, c(5:6, 8:23)]
+  irisr.app <- irisr.app[!duplicated(irisr.app$COMF_CODE_MULTI), ]
+  
+  c_c2023r <- merge(c_c2023r[, -5], 
+                    irisr.app, 
+                    by.x = "COMR5_CODE", 
+                    by.y = "COMF_CODE_MULTI", 
+                    all.x = TRUE)
+  
+  names(c_c2023r)[4] <- "COM_TYPE"
+  names(c_c2023r)[6] <- "COMR5_LIB"
+  
+  c_c2023r <- c_c2023r[, c("COM_CODE", "COM_TYPE", 
+                           "COMR5_CODE", "COMR5_LIB", 
+                           cols)]
+  
+  myt <- .add_mayotte(c_c2023, "COMF_CODE", "COMF_LIB", "COMR5_CODE", "COMR_LIB")
+  myt <- myt[, colnames(c_c2023r)]
+  
+  c_c2023r <- rbind(c_c2023r[!grepl("^976", c_c2023r$COM_CODE), ], myt)
+  
+  c_c2023r[] <- lapply(c_c2023r, as.character)
+  c_c2023r <- c_c2023r[order(c_c2023r[[1]]), ]
+  
+  return(c_c2023r)
+}
 
 
 
@@ -30,6 +124,8 @@ load("input/mar_metadata/donnees/AR03_maille_IRISr5.RData")
 
 
 
+
+###############################################################################
 ###############################################################################
 library(asf)
 
