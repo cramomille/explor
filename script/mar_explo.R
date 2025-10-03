@@ -1,4 +1,75 @@
 
+library(sf)
+library(mapsf)
+library(asf)
+
+
+ix1 <- asf_mar("iris_xxxx", "iris_f")
+ix2 <- asf_mar("iris_xxxx", "iris_r2")
+ix3 <- asf_mar("iris_xxxx", "iris_r5")
+ix4 <- asf_mar("iris_xxxx", "com_f")
+ix5 <- asf_mar("iris_xxxx", "com_r2")
+ix6 <- asf_mar("iris_xxxx", "com_r5")
+
+ii1 <- asf_mar("iris_2023", "iris_r2")
+ii2 <- asf_mar("iris_2023", "iris_r5")
+ii3 <- asf_mar("iris_2023", "com_f")
+ii4 <- asf_mar("iris_2023", "com_r2")
+ii5 <- asf_mar("iris_2023", "com_r5")
+
+cx1 <- asf_mar("com_xxxx", "com_f")
+cx2 <- asf_mar("com_xxxx", "com_r2")
+cx3 <- asf_mar("com_xxxx", "com_r5")
+
+cc1 <- asf_mar("com_2023", "com_r2")
+cc2 <- asf_mar("com_2023", "com_r5")
+
+fond <- asf_mar(geom = TRUE)
+
+
+# Conversions IRIS_xxxx
+ix1_f <- asf_fond(fond, ix1, by = "IRISF_CODE", maille = "IRISF_CODE")
+ix2_f <- asf_fond(fond, ix2, by = "IRISF_CODE", maille = "IRISrD_CODE")
+ix3_f <- asf_fond(fond, ix3, by = "IRISF_CODE", maille = "IRISr5_CODE")
+ix4_f <- asf_fond(fond, ix4, by = "COMF_CODE", maille = "COMF_CODE")
+ix5_f <- asf_fond(fond, ix5, by = "COMF_CODE", maille = "COMR2_CODE")
+ix6_f <- asf_fond(fond, ix6, by = "COMF_CODE", maille = "COMR5_CODE")
+
+# Conversions IRIS_2023
+ii1_f <- asf_fond(fond, ii1, by = "IRISF_CODE", maille = "IRISrS_CODE")
+ii2_f <- asf_fond(fond, ii2, by = "IRISF_CODE", maille = "IRISr5_CODE")
+ii3_f <- asf_fond(fond, ii3, by = "COMF_CODE", maille = "COMF_CODE")
+ii4_f <- asf_fond(fond, ii4, by = "COMF_CODE", maille = "COMR2_CODE")
+ii5_f <- asf_fond(fond, ii5, by = "COMF_CODE", maille = "COMR5_CODE")
+
+# Conversions COM_xxxx
+cx1_f <- asf_fond(fond, cx1, by = "COMF_CODE", maille = "COMF_CODE")
+cx2_f <- asf_fond(fond, cx2, by = "COMF_CODE", maille = "COMR2_CODE")
+cx3_f <- asf_fond(fond, cx3, by = "COMF_CODE", maille = "COMR5_CODE")
+
+# Conversions COM_2023
+cc1_f <- asf_fond(fond, cc1, by = "COMF_CODE", maille = "COMR2_CODE")
+cc2_f <- asf_fond(fond, cc2, by = "COMF_CODE", maille = "COMR5_CODE")
+
+
+
+mf_map(asf_drom(cx3_f, id = "COMR5_CODE"))
+
+
+st_write(cc1_f, "cc1_f.gpkg")
+st_write(cc2_f, "cc2_f.gpkg")
+
+st_write(cx3_f, "cx3_f.gpkg")
+
+
+
+
+
+
+
+
+
+
 
 library(sf)
 load("input/mar_metadata/donnees/AR03_maille_IRISr5.RData")
