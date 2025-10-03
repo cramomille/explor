@@ -1,107 +1,151 @@
 
 
-
-
-t <- asf_ma(md = "iris_2023", 
-            ma = "iris_f")
-
-
-
+library(sf)
 load("input/mar_metadata/donnees/AR03_maille_IRISr5.RData")
+
+# write.csv(d.irisr5.app.iris, "d.irisr5.app.iris.cvs",  row.names = FALSE)
+# write.csv(d.irisr5.app.irisr, "d.irisr5.app.irisr.cvs",  row.names = FALSE)
+# write.csv(d.irisr5.etapes, "d.irisr5.etapes.csv",  row.names = FALSE)
+# write.csv(d.irisr5.pass, "d.irisr5.pass.csv",  row.names = FALSE)
+# st_write(sf.irisr5, "sf.irisr5.gpkg")
 
 
 ###############################################################################
 .ixxxx_to_i2023r5 <- function() {
-  irisr.pass <- d.irisr5.pass
-  irisr.app <- d.irisr5.app.iris
+  irisr5.pass <- .read_csv(path_irisr5.pass)
+  irisr5.app <- .read_csv(path_irisr5.app.iris)
   i_i2023 <- .ixxxx_to_i2023()
   
-  i_i2023r <- merge(i_i2023[, c("IRIS_CODE", "IRISF_CODE")],
-                    irisr.pass[, c("IRISF_CODE", "IRISr5_CODE", "IRISr5_LIB")],
-                    by = "IRISF_CODE")
+  i_i2023r5 <- merge(i_i2023[, c("IRIS_CODE", "IRISF_CODE")],
+                     irisr5.pass[, c("IRISF_CODE", "IRISr5_CODE", "IRISr5_LIB")],
+                     by = "IRISF_CODE")
   
-  i_i2023r <- merge(i_i2023r,
-                    irisr.app[, -2],
-                    by = "IRISr5_CODE")
+  i_i2023r5 <- merge(i_i2023r5,
+                     irisr5.app[, -2],
+                     by = "IRISr5_CODE")
   
-  i_i2023r <- i_i2023r[, c("IRIS_CODE", "IRISF_CODE", "IRISr5_CODE", "IRISr5_LIB", cols)]
+  i_i2023r5 <- i_i2023r5[, c("IRIS_CODE", "IRISF_CODE", "IRISr5_CODE", "IRISr5_LIB", cols)]
   
   # Ajout Mayotte
   myt <- .add_mayotte(i_i2023, "IRISF_CODE", "IRISF_LIB", "IRISr5_CODE", "IRISr5_LIB")
-  myt <- myt[, colnames(i_i2023r)]
-  i_i2023r <- rbind(i_i2023r, myt)
+  myt <- myt[, colnames(i_i2023r5)]
+  i_i2023r5 <- rbind(i_i2023r5, myt)
   
-  i_i2023r[] <- lapply(i_i2023r, as.character)
-  i_i2023r <- i_i2023r[order(i_i2023r[[1]]), ]
+  i_i2023r5[] <- lapply(i_i2023r5, as.character)
+  i_i2023r5 <- i_i2023r5[order(i_i2023r5[[1]]), ]
+  row.names(i_i2023r5) <- NULL
   
-  return(i_i2023r)
+  return(i_i2023r5)
 }
 
 ###############################################################################
 .ixxxx_to_c2023r5 <- function() {
   i_c2023 <- .ixxxx_to_c2023()
-  c_c2023r <- .cxxxx_to_c2023r5()
+  c_c2023r5 <- .cxxxx_to_c2023r5()
   
   i_c2023$COM_CODE <- substr(i_c2023$IRIS_CODE, 1, 5)
   i_c2023 <- i_c2023[, c("IRIS_CODE", "COM_CODE", "COMF_CODE")]
   
-  i_c2023r <- merge(i_c2023,
-                    c_c2023r[, -2],
-                    by = "COM_CODE")
+  i_c2023r5 <- merge(i_c2023,
+                     c_c2023r5[, !(names(c_c2023r5) %in% c("COM_TYPE", "COMF_CODE"))],
+                     by = "COM_CODE")
   
-  i_c2023r <- i_c2023r[, -1]
+  i_c2023r5 <- i_c2023r5[, -1]
   
-  i_c2023r[] <- lapply(i_c2023r, as.character)
-  i_c2023r <- i_c2023r[order(i_c2023r[[1]]), ]
+  i_c2023r5[] <- lapply(i_c2023r5, as.character)
+  i_c2023r5 <- i_c2023r5[order(i_c2023r5[[1]]), ]
+  row.names(i_c2023r5) <- NULL
   
-  return(i_c2023r)
+  return(i_c2023r5)
 }
-
 
 ###############################################################################
 .cxxxx_to_c2023r5 <- function() { 
-  irisr.app <- d.irisr5.app.iris
+  irisr5.app <- .read_csv(path_irisr5.app.iris)
   comf.pass <- .read_csv(path_comf.pass)
   c_c2023 <- .cxxxx_to_c2023()
   
-  id_list <- strsplit(irisr.app$COMF_CODE_MULTI, " \\| ")
+  id_list <- strsplit(irisr5.app$COMF_CODE_MULTI, " \\| ")
   id_tabl <- data.frame(
     COMF_CODE = unlist(id_list),
-    COMR5_CODE = rep(irisr.app$COMF_CODE_MULTI, sapply(id_list, length))
+    COMR5_CODE = rep(irisr5.app$COMF_CODE_MULTI, sapply(id_list, length))
   )
   id_tabl <- id_tabl[!duplicated(id_tabl$COMF_CODE), ]
   
-  c_c2023r <- merge(comf.pass, 
-                    id_tabl, 
-                    by = "COMF_CODE", 
-                    all.x = TRUE)
+  c_c2023r5 <- merge(comf.pass, 
+                     id_tabl, 
+                     by = "COMF_CODE", 
+                     all.x = TRUE)
   
-  irisr.app <- irisr.app[, c(5:6, 8:23)]
-  irisr.app <- irisr.app[!duplicated(irisr.app$COMF_CODE_MULTI), ]
+  irisr5.app <- irisr5.app[, c(5:6, 8:23)]
+  irisr5.app <- irisr5.app[!duplicated(irisr5.app$COMF_CODE_MULTI), ]
   
-  c_c2023r <- merge(c_c2023r[, -5], 
-                    irisr.app, 
-                    by.x = "COMR5_CODE", 
-                    by.y = "COMF_CODE_MULTI", 
-                    all.x = TRUE)
+  c_c2023r5 <- merge(c_c2023r5[, -5], 
+                     irisr5.app, 
+                     by.x = "COMR5_CODE", 
+                     by.y = "COMF_CODE_MULTI", 
+                     all.x = TRUE)
   
-  names(c_c2023r)[4] <- "COM_TYPE"
-  names(c_c2023r)[6] <- "COMR5_LIB"
+  names(c_c2023r5)[4] <- "COM_TYPE"
+  names(c_c2023r5)[6] <- "COMR5_LIB"
   
-  c_c2023r <- c_c2023r[, c("COM_CODE", "COM_TYPE", 
-                           "COMR5_CODE", "COMR5_LIB", 
-                           cols)]
+  c_c2023r5 <- c_c2023r5[, c("COM_CODE", "COM_TYPE", 
+                             "COMF_CODE",
+                             "COMR5_CODE", "COMR5_LIB", 
+                             cols)]
   
-  myt <- .add_mayotte(c_c2023, "COMF_CODE", "COMF_LIB", "COMR5_CODE", "COMR_LIB")
-  myt <- myt[, colnames(c_c2023r)]
+  myt <- .add_mayotte(c_c2023, "COMF_CODE", "COMF_LIB", "COMR5_CODE", "COMR5_LIB")
+  myt <- myt[, colnames(c_c2023r5)]
   
-  c_c2023r <- rbind(c_c2023r[!grepl("^976", c_c2023r$COM_CODE), ], myt)
+  c_c2023r5 <- rbind(c_c2023r5[!grepl("^976", c_c2023r5$COM_CODE), ], myt)
   
-  c_c2023r[] <- lapply(c_c2023r, as.character)
-  c_c2023r <- c_c2023r[order(c_c2023r[[1]]), ]
+  c_c2023r5[] <- lapply(c_c2023r5, as.character)
+  c_c2023r5 <- c_c2023r5[order(c_c2023r5[[1]]), ]
+  row.names(c_c2023r5) <- NULL
   
-  return(c_c2023r)
+  return(c_c2023r5)
 }
+
+###############################################################################
+.i2023_to_i2023r5 <- function() {
+  i_i2023 <- .ixxxx_to_i2023()
+  i_i2023r5 <- .ixxxx_to_i2023r5()
+  
+  i_i2023r5 <- i_i2023r5[i_i2023r5$IRIS_CODE %in% i_i2023$IRISF_CODE, ]
+  i_i2023r5 <- i_i2023r5[order(i_i2023r5[[1]]), ]
+  row.names(i_i2023r5) <- NULL
+  
+  return(i_i2023r5)
+}
+
+###############################################################################
+.i2023_to_c2023r5 <- function() {
+  i_i2023 <- .ixxxx_to_i2023()
+  i_c2023r5 <- .ixxxx_to_c2023r5()
+  
+  i_c2023r5 <- i_c2023r5[i_c2023r5$IRIS_CODE %in% i_i2023$IRISF_CODE, ]
+  i_c2023r5 <- i_c2023r5[order(i_c2023r5[[1]]), ]
+  row.names(i_c2023r5) <- NULL
+  
+  return(i_c2023r5)
+}
+
+###############################################################################
+.c2023_to_c2023r5 <- function() {
+  c_c2023 <- .cxxxx_to_c2023()
+  c_c2023r5 <- .cxxxx_to_c2023r5()
+  
+  c_c2023r5 <- c_c2023r5[c_c2023r5$COM_CODE %in% c_c2023$COMF_CODE, ]
+  
+  c_c2023r5 <- c_c2023r5[order(c_c2023r5[[1]]), ]
+  row.names(c_c2023r5) <- NULL
+  
+  return(c_c2023r5)
+}
+
+
+
+#
 
 
 

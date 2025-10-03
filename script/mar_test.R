@@ -81,7 +81,6 @@ asf_maa <- function(md = NULL,
     return(myt)
   }
   
-  
   # IRIS d'une annee autre que 2023 vers les IRIS de 2023
   .ixxxx_to_i2023 <- function() {
     irisf.pass <- .read_csv(path_irisf.pass)
@@ -95,35 +94,37 @@ asf_maa <- function(md = NULL,
     
     i_i2023[] <- lapply(i_i2023, as.character)
     i_i2023 <- i_i2023[order(i_i2023[[1]]), ]
+    row.names(i_i2023) <- NULL
     
     return(i_i2023)
   }
   
   # IRIS d'une annee autre que 2023 vers les IRIS de 2023 regroupes
   .ixxxx_to_i2023r2 <- function() {
-    irisr.pass <- .read_csv(path_irisr.pass)
-    irisr.app <- .read_csv(path_irisr.app)
+    irisr2.pass <- .read_csv(path_irisr2.pass)
+    irisr2.app <- .read_csv(path_irisr2.app)
     i_i2023 <- .ixxxx_to_i2023()
     
-    i_i2023r <- merge(i_i2023[, c("IRIS_CODE", "IRISF_CODE")],
-                      irisr.pass[, c("IRISF_CODE", "IRISrD_CODE", "IRISrD_LIB")],
-                      by = "IRISF_CODE")
+    i_i2023r2 <- merge(i_i2023[, c("IRIS_CODE", "IRISF_CODE")],
+                       irisr2.pass[, c("IRISF_CODE", "IRISrD_CODE", "IRISrD_LIB")],
+                       by = "IRISF_CODE")
     
-    i_i2023r <- merge(i_i2023r,
-                      irisr.app[, -2],
-                      by = "IRISrD_CODE")
+    i_i2023r2 <- merge(i_i2023r2,
+                       irisr2.app[, -2],
+                       by = "IRISrD_CODE")
     
-    i_i2023r <- i_i2023r[, c("IRIS_CODE", "IRISF_CODE", "IRISrD_CODE", "IRISrD_LIB", cols)]
+    i_i2023r2 <- i_i2023r2[, c("IRIS_CODE", "IRISF_CODE", "IRISrD_CODE", "IRISrD_LIB", cols)]
     
     # Ajout Mayotte
     myt <- .add_mayotte(i_i2023, "IRISF_CODE", "IRISF_LIB", "IRISrD_CODE", "IRISrD_LIB")
-    myt <- myt[, colnames(i_i2023r)]
-    i_i2023r <- rbind(i_i2023r, myt)
+    myt <- myt[, colnames(i_i2023r2)]
+    i_i2023r2 <- rbind(i_i2023r2, myt)
     
-    i_i2023r[] <- lapply(i_i2023r, as.character)
-    i_i2023r <- i_i2023r[order(i_i2023r[[1]]), ]
+    i_i2023r2[] <- lapply(i_i2023r2, as.character)
+    i_i2023r2 <- i_i2023r2[order(i_i2023r2[[1]]), ]
+    row.names(i_i2023r2) <- NULL
     
-    return(i_i2023r)
+    return(i_i2023r2)
   }
   
   # IRIS d'une annee autre que 2023 vers les communes de 2023
@@ -139,6 +140,7 @@ asf_maa <- function(md = NULL,
     
     i_c2023[] <- lapply(i_c2023, as.character)
     i_c2023 <- i_c2023[order(i_c2023[[1]]), ]
+    row.names(i_c2023) <- NULL
     
     return(i_c2023)
   }
@@ -146,47 +148,49 @@ asf_maa <- function(md = NULL,
   # IRIS d'une annee autre que 2023 vers les communes de 2023 regroupees
   .ixxxx_to_c2023r2 <- function() {
     i_c2023 <- .ixxxx_to_c2023()
-    c_c2023r <- .cxxxx_to_c2023r()
+    c_c2023r2 <- .cxxxx_to_c2023r2()
     
     i_c2023$COM_CODE <- substr(i_c2023$IRIS_CODE, 1, 5)
     i_c2023 <- i_c2023[, c("IRIS_CODE", "COM_CODE", "COMF_CODE")]
     
-    i_c2023r <- merge(i_c2023,
-                      c_c2023r[, -2],
-                      by = "COM_CODE")
+    i_c2023r2 <- merge(i_c2023,
+                       c_c2023r2[, -2],
+                       by = "COM_CODE")
     
-    i_c2023r <- i_c2023r[, -1]
+    i_c2023r2 <- i_c2023r2[, -1]
     
-    i_c2023r[] <- lapply(i_c2023r, as.character)
-    i_c2023r <- i_c2023r[order(i_c2023r[[1]]), ]
+    i_c2023r2[] <- lapply(i_c2023r2, as.character)
+    i_c2023r2 <- i_c2023r2[order(i_c2023r2[[1]]), ]
+    row.names(i_c2023r2) <- NULL
     
-    return(i_c2023r)
+    return(i_c2023r2)
   }
   
   # IRIS de 2023 vers les IRIS de 2023 regroupes
   .i2023_to_i2023r2 <- function() {
-    irisr.pass <- .read_csv(path_irisr.pass)
-    irisr.app <- .read_csv(path_irisr.app)
+    irisr2.pass <- .read_csv(path_irisr2.pass)
+    irisr2.app <- .read_csv(path_irisr2.app)
     i_i2023 <- .ixxxx_to_i2023()
     
-    i_i2023r <- merge(i_i2023[, c("IRIS_CODE", "IRISF_CODE")],
-                      irisr.pass[, c("IRISF_CODE", "IRISrS_CODE", "IRISrS_LIB", "IRISrD_CODE")],
-                      by = "IRISF_CODE")
-    i_i2023r <- merge(i_i2023r,
-                      irisr.app[, -2],
-                      by = "IRISrD_CODE")
+    i_i2023r2 <- merge(i_i2023[, c("IRIS_CODE", "IRISF_CODE")],
+                       irisr2.pass[, c("IRISF_CODE", "IRISrS_CODE", "IRISrS_LIB", "IRISrD_CODE")],
+                       by = "IRISF_CODE")
+    i_i2023r2 <- merge(i_i2023r2,
+                       irisr2.app[, -2],
+                       by = "IRISrD_CODE")
     
-    i_i2023r <- i_i2023r[, c("IRIS_CODE", "IRISF_CODE", "IRISrS_CODE", "IRISrS_LIB", cols)]
+    i_i2023r2 <- i_i2023r2[, c("IRIS_CODE", "IRISF_CODE", "IRISrS_CODE", "IRISrS_LIB", cols)]
     
     # Ajout Mayotte
     myt <- .add_mayotte(i_i2023, "IRISF_CODE", "IRISF_LIB", "IRISrS_CODE", "IRISrS_LIB")
-    myt <- myt[, colnames(i_i2023r)]
-    i_i2023r <- rbind(i_i2023r, myt)
+    myt <- myt[, colnames(i_i2023r2)]
+    i_i2023r2 <- rbind(i_i2023r2, myt)
     
-    i_i2023r[] <- lapply(i_i2023r, as.character)
-    i_i2023r <- i_i2023r[order(i_i2023r[[1]]), ]
+    i_i2023r2[] <- lapply(i_i2023r2, as.character)
+    i_i2023r2 <- i_i2023r2[order(i_i2023r2[[1]]), ]
+    row.names(i_i2023r2) <- NULL
     
-    return(i_i2023r)
+    return(i_i2023r2)
   }
   
   # IRIS de 2023 vers les communes de 2023
@@ -196,6 +200,7 @@ asf_maa <- function(md = NULL,
     
     i_c2023 <- i_c2023[i_c2023$IRIS_CODE %in% i_i2023$IRISF_CODE, ]
     colnames(i_c2023)[1] <- "IRISF_CODE"
+    row.names(i_c2023) <- NULL
     
     return(i_c2023)
   }
@@ -203,12 +208,13 @@ asf_maa <- function(md = NULL,
   # IRIS de 2023 vers les communes de 2023 regroupees
   .i2023_to_c2023r2 <- function() {
     i_i2023 <- .ixxxx_to_i2023()
-    i_c2023r <- .ixxxx_to_c2023r()
+    i_c2023r2 <- .ixxxx_to_c2023r2()
     
-    i_c2023r <- i_c2023r[i_c2023r$IRIS_CODE %in% i_i2023$IRISF_CODE, ]
-    colnames(i_c2023r)[1] <- "IRISF_CODE"
+    i_c2023r2 <- i_c2023r2[i_c2023r2$IRIS_CODE %in% i_i2023$IRISF_CODE, ]
+    colnames(i_c2023r2)[1] <- "IRISF_CODE"
+    row.names(i_c2023r2) <- NULL
     
-    return(i_c2023r)
+    return(i_c2023r2)
   }
   
   # Communes d'une annee autre que 2023 vers les communes de 2023
@@ -228,84 +234,95 @@ asf_maa <- function(md = NULL,
     
     c_c2023[] <- lapply(c_c2023, as.character)
     c_c2023 <- c_c2023[order(c_c2023[[1]]), ]
+    row.names(c_c2023) <- NULL
     
     return(c_c2023)
   }
   
   # Communes d'une annee autre que 2023 vers les communes de 2023 regroupees
   .cxxxx_to_c2023r2 <- function() { 
-    irisr.app <- .read_csv(path_irisr.app)
+    irisr2.app <- .read_csv(path_irisr2.app)
     comf.pass <- .read_csv(path_comf.pass)
     c_c2023 <- .cxxxx_to_c2023()
     
-    id_list <- strsplit(irisr.app$COMF_CODE_MULTI, " \\| ")
+    id_list <- strsplit(irisr2.app$COMF_CODE_MULTI, " \\| ")
     id_tabl <- data.frame(
       COMF_CODE = unlist(id_list),
-      COMR_CODE = rep(irisr.app$COMF_CODE_MULTI, sapply(id_list, length))
+      COMR_CODE = rep(irisr2.app$COMF_CODE_MULTI, sapply(id_list, length))
     )
     id_tabl <- id_tabl[!duplicated(id_tabl$COMF_CODE), ]
     
-    c_c2023r <- merge(comf.pass, 
-                      id_tabl, 
-                      by = "COMF_CODE",
-                      all.x = TRUE)
+    c_c2023r2 <- merge(comf.pass, 
+                       id_tabl, 
+                       by = "COMF_CODE",
+                       all.x = TRUE)
     
-    irisr.app <- irisr.app[, c(5:6, 10:25)]
-    irisr.app <- irisr.app[!duplicated(irisr.app$COMF_CODE_MULTI), ]
+    irisr2.app <- irisr2.app[, c(5:6, 10:25)]
+    irisr2.app <- irisr2.app[!duplicated(irisr2.app$COMF_CODE_MULTI), ]
     
-    c_c2023r <- merge(c_c2023r, 
-                      irisr.app, 
-                      by.x = "COMR_CODE", 
-                      by.y = "COMF_CODE_MULTI", 
-                      all.x = TRUE)
+    c_c2023r2 <- merge(c_c2023r2, 
+                       irisr2.app, 
+                       by.x = "COMR_CODE", 
+                       by.y = "COMF_CODE_MULTI", 
+                       all.x = TRUE)
     
-    names(c_c2023r)[4] <- "COM_TYPE"
-    names(c_c2023r)[7] <- "COMR_LIB"
+    names(c_c2023r2)[4] <- "COM_TYPE"
+    names(c_c2023r2)[7] <- "COMR_LIB"
     
-    c_c2023r <- c_c2023r[, c("COM_CODE", "COM_TYPE", 
-                             "COMR_CODE", "COMR_LIB", 
-                             cols)]
+    c_c2023r2 <- c_c2023r2[, c("COM_CODE", "COM_TYPE", 
+                               "COMF_CODE",
+                               "COMR_CODE", "COMR_LIB", 
+                               cols)]
     
     myt <- .add_mayotte(c_c2023, "COMF_CODE", "COMF_LIB", "COMR_CODE", "COMR_LIB")
-    myt <- myt[, colnames(c_c2023r)]
+    myt <- myt[, colnames(c_c2023r2)]
     
-    c_c2023r <- rbind(c_c2023r[!grepl("^976", c_c2023r$COM_CODE), ], myt)
+    c_c2023r2 <- rbind(c_c2023r2[!grepl("^976", c_c2023r2$COM_CODE), ], myt)
     
-    c_c2023r[] <- lapply(c_c2023r, as.character)
-    c_c2023r <- c_c2023r[order(c_c2023r[[1]]), ]
+    c_c2023r2[] <- lapply(c_c2023r2, as.character)
+    c_c2023r2 <- c_c2023r2[order(c_c2023r2[[1]]), ]
+    row.names(c_c2023r2) <- NULL
     
-    return(c_c2023r)
+    return(c_c2023r2)
   }
   
   # Communes de 2023 vers les communes de 2023 regroupees
   .c2023_to_c2023r2 <- function() {
     c_c2023 <- .cxxxx_to_c2023()
-    c_c2023r <- .cxxxx_to_c2023r()
+    c_c2023r2 <- .cxxxx_to_c2023r2()
     
-    c_c2023r <- c_c2023r[c_c2023r$COM_CODE == c_c2023$COMF_CODE, ]
-    colnames(c_c2023r)[1] <- "COMF_CODE"
+    c_c2023r2 <- c_c2023r2[c_c2023r2$COM_CODE == c_c2023$COMF_CODE, ]
+    colnames(c_c2023r2)[1] <- "COMF_CODE"
+    row.names(c_c2023r2) <- NULL
     
-    return(c_c2023r)
+    return(c_c2023r2)
   }
   
   # PROCESSING ----------------------------------------------------------------
   # Definition des chemins selon le mode
   if (is.null(dir)) {
     message("Lecture des fichiers depuis le web (huma-num) :")
-    path_irisf <- "https://sharedocs.huma-num.fr/wl/?id=AMw46huJSZLVk1oqVx0MVmpuwxch0MZh&mode=grid&download=1"
-    path_irisr.pass <- "https://sharedocs.huma-num.fr/wl/?id=vj5IeTHl913v84yYgZlLBUecgrZnnHZR&mode=grid&download=1"
-    path_irisr.app <- "https://sharedocs.huma-num.fr/wl/?id=sywlXWRph0cGfoRohzYSR8IGJWSAlYvx&mode=grid&download=1"
-    path_irisf.pass <- "https://sharedocs.huma-num.fr/wl/?id=9rAif9O43umIs2cnEeMK4n1uMwS2F0Bl&mode=grid&download=1"
-    path_comf.pass <- "https://sharedocs.huma-num.fr/wl/?id=71exUwWdYhEOof3DJbg5ea1p89HrJwAl&mode=grid&download=1"
-    path_comf.app <- "https://sharedocs.huma-num.fr/wl/?id=6Wmy4MtiCxbMs8OUQ7Eht1X1dOlCLXcb&mode=grid&download=1"
+    path_irisf             <- "https://sharedocs.huma-num.fr/wl/?id=AMw46huJSZLVk1oqVx0MVmpuwxch0MZh&mode=grid&download=1"
+    path_irisr5.pass       <- "https://sharedocs.huma-num.fr/wl/?id=jwSNdmvykqbKaZAr21UlGcZMZd0pAfVX&mode=grid&download=1"
+    path_irisr5.app.iris   <- "https://sharedocs.huma-num.fr/wl/?id=5mvRbwFkiV56UuNVXWPSeXLTmX2QmNjL&mode=grid&download=1"
+    path_irisr5.app.irisr2 <- "https://sharedocs.huma-num.fr/wl/?id=4Zaj6aV0clEfzvKhGPah4pBxCLa6mJkY&mode=grid&download=1"
+    path_irisr2.pass       <- "https://sharedocs.huma-num.fr/wl/?id=vj5IeTHl913v84yYgZlLBUecgrZnnHZR&mode=grid&download=1"
+    path_irisr2.app        <- "https://sharedocs.huma-num.fr/wl/?id=sywlXWRph0cGfoRohzYSR8IGJWSAlYvx&mode=grid&download=1"
+    path_irisf.pass        <- "https://sharedocs.huma-num.fr/wl/?id=9rAif9O43umIs2cnEeMK4n1uMwS2F0Bl&mode=grid&download=1"
+    path_comf.pass         <- "https://sharedocs.huma-num.fr/wl/?id=71exUwWdYhEOof3DJbg5ea1p89HrJwAl&mode=grid&download=1"
+    path_comf.app          <- "https://sharedocs.huma-num.fr/wl/?id=6Wmy4MtiCxbMs8OUQ7Eht1X1dOlCLXcb&mode=grid&download=1"
+    
   } else {
     message("Lecture des fichiers depuis le dossier local : ", dir)
-    path_irisf <- file.path(dir, "sf.irisf.gpkg")
-    path_irisr.pass <- file.path(dir, "d.irisr.pass.csv")
-    path_irisr.app <- file.path(dir, "d.irisr.app.csv")
-    path_irisf.pass <- file.path(dir, "d.irisf.pass.csv")
-    path_comf.pass <- file.path(dir, "d.comf.pass.csv")
-    path_comf.app <- file.path(dir, "d.comf.app.csv")
+    path_irisf             <- file.path(dir, "sf.irisf.gpkg")
+    path_irisr5.pass       <- file.path(dir, "d.irisr5.pass")
+    path_irisr5.app.iris   <- file.path(dir, "d.irisr5.app.iris.csv")
+    path_irisr5.app.irisr2 <- file.path(dir, "d.irisr5.app.irisr.csv")
+    path_irisr2.pass       <- file.path(dir, "d.irisr.pass.csv")
+    path_irisr2.app        <- file.path(dir, "d.irisr.app.csv")
+    path_irisf.pass        <- file.path(dir, "d.irisf.pass.csv")
+    path_comf.pass         <- file.path(dir, "d.comf.pass.csv")
+    path_comf.app          <- file.path(dir, "d.comf.app.csv")
   }
   
   # Definition des colonnes communes a toutes les tables
