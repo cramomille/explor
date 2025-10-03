@@ -26,26 +26,29 @@
 #' result <- asf_mar(md = "iris_xxxx", ma = "com_r2", geom = TRUE)
 #'
 #' @export
-asf_maa <- function(md = NULL,
+asf_mar <- function(md = NULL,
                     ma = NULL,
                     geom = FALSE,
                     dir = NULL) {
   
   # CHECK PARAMS --------------------------------------------------------------
   valid_conversions <- list(
-    iris_xxxx = c("iris_f", "iris_r2", "com_f", "com_r2"),
-    iris_2023 = c("iris_r2", "com_f", "com_r2"),
-    com_xxxx  = c("com_f", "com_r2"),
-    com_2023  = c("com_r2")
+    iris_xxxx = c("iris_f", "iris_r2", "iris_r5", "com_f", "com_r2", "com_r5"),
+    iris_2023 = c("iris_r2", "iris_r5", "com_f", "com_r2", "com_r5"),
+    com_xxxx  = c("com_f", "com_r2", "com_r5"),
+    com_2023  = c("com_r2", "com_r5")
   )
   
-  if (is.null(md) || !md %in% names(valid_conversions)) {
-    stop("'md' doit etre une maille valide : ", paste(names(valid_conversions), collapse = ", "))
+  if (!(is.null(md) && is.null(ma) && geom)) {
+    if (is.null(md) || !md %in% names(valid_conversions)) {
+      stop("'md' doit etre une maille valide : ", paste(names(valid_conversions), collapse = ", "))
+    }
+    if (is.null(ma) || !ma %in% valid_conversions[[md]]) {
+      stop("depuis la maille '", md, "' seules ces mailles sont possibles : ",
+           paste(shQuote(valid_conversions[[md]], type = "sh"), collapse = ", "))
+    }
   }
-  if (is.null(ma) || !ma %in% valid_conversions[[md]]) {
-    stop("depuis la maille '", md, "' seules ces mailles sont possibles : ",
-         paste(shQuote(valid_conversions[[md]], type = "sh"), collapse = ", "))
-  }
+  
   if (!is.logical(geom) || length(geom) != 1) {
     stop("'geom' doit etre un booleen (TRUE ou FALSE)")
   }
@@ -56,20 +59,14 @@ asf_maa <- function(md = NULL,
   # SUB-FUNCTIONS -------------------------------------------------------------
   .cache <- new.env()
   
-  .read_csv <- function(path) {
+  .read_file <- function(path, type = c("csv", "sf")) {
+    type <- match.arg(type)
     name <- sub("^path_", "", deparse(substitute(path)))
     if (!exists(name, envir = .cache)) {
-      message(name)
-      .cache[[name]] <- utils::read.csv(path)
-    }
-    return(.cache[[name]])
-  }
-  
-  .read_sf <- function(path) {
-    name <- sub("^path_", "", deparse(substitute(path)))
-    if (!exists(name, envir = .cache)) {
-      message(name)
-      .cache[[name]] <- sf::st_read(path, quiet = TRUE)
+      message("  - ", name)
+      .cache[[name]] <- switch(type,
+                               csv = utils::read.csv(path),
+                               sf  = sf::st_read(path, quiet = TRUE))
     }
     return(.cache[[name]])
   }
@@ -81,10 +78,17 @@ asf_maa <- function(md = NULL,
     return(myt)
   }
   
+  .clean_tabl <- function(df) {
+    df[] <- lapply(df, as.character)  # convertit toutes les colonnes en character
+    df <- df[order(df[[1]]), ]        # trie par la premiere colonne
+    row.names(df) <- NULL             # reinitialise les row names
+    return(df)
+  }
+  
   # IRIS d'une annee autre que 2023 vers les IRIS de 2023
   .ixxxx_to_i2023 <- function() {
-    irisf.pass <- .read_csv(path_irisf.pass)
-    comf.app <- .read_csv(path_comf.app)
+    irisf.pass <- .read_file(path_irisf.pass, "csv")
+    comf.app <- .read_file(path_comf.app, "csv")
     
     i_i2023 <- merge(irisf.pass, 
                      comf.app, 
@@ -92,17 +96,15 @@ asf_maa <- function(md = NULL,
     
     i_i2023 <- i_i2023[, c("IRIS_CODE", "IRISF_CODE", "IRISF_LIB", cols)]
     
-    i_i2023[] <- lapply(i_i2023, as.character)
-    i_i2023 <- i_i2023[order(i_i2023[[1]]), ]
-    row.names(i_i2023) <- NULL
+    i_i2023 <- .clean_tabl(i_i2023)
     
     return(i_i2023)
   }
   
-  # IRIS d'une annee autre que 2023 vers les IRIS de 2023 regroupes
+  # IRIS d'une annee autre que 2023 vers les IRIS de 2023 regroupes (2 000 hab)
   .ixxxx_to_i2023r2 <- function() {
-    irisr2.pass <- .read_csv(path_irisr2.pass)
-    irisr2.app <- .read_csv(path_irisr2.app)
+    irisr2.pass <- .read_file(path_irisr2.pass, "csv")
+    irisr2.app <- .read_file(path_irisr2.app, "csv")
     i_i2023 <- .ixxxx_to_i2023()
     
     i_i2023r2 <- merge(i_i2023[, c("IRIS_CODE", "IRISF_CODE")],
@@ -110,7 +112,7 @@ asf_maa <- function(md = NULL,
                        by = "IRISF_CODE")
     
     i_i2023r2 <- merge(i_i2023r2,
-                       irisr2.app[, -2],
+                       irisr2.app[, !(names(irisr2.app) %in% "IRISrD_LIB")],
                        by = "IRISrD_CODE")
     
     i_i2023r2 <- i_i2023r2[, c("IRIS_CODE", "IRISF_CODE", "IRISrD_CODE", "IRISrD_LIB", cols)]
@@ -120,17 +122,41 @@ asf_maa <- function(md = NULL,
     myt <- myt[, colnames(i_i2023r2)]
     i_i2023r2 <- rbind(i_i2023r2, myt)
     
-    i_i2023r2[] <- lapply(i_i2023r2, as.character)
-    i_i2023r2 <- i_i2023r2[order(i_i2023r2[[1]]), ]
-    row.names(i_i2023r2) <- NULL
+    i_i2023r2 <- .clean_tabl(i_i2023r2)
     
     return(i_i2023r2)
   }
   
+  # IRIS d'une annee autre que 2023 vers les IRIS de 2023 regroupes (5 000 hab)
+  .ixxxx_to_i2023r5 <- function() {
+    irisr5.pass <- .read_file(path_irisr5.pass, "csv")
+    irisr5.app <- .read_file(path_irisr5.app.iris, "csv")
+    i_i2023 <- .ixxxx_to_i2023()
+    
+    i_i2023r5 <- merge(i_i2023[, c("IRIS_CODE", "IRISF_CODE")],
+                       irisr5.pass[, c("IRISF_CODE", "IRISr5_CODE", "IRISr5_LIB")],
+                       by = "IRISF_CODE")
+    
+    i_i2023r5 <- merge(i_i2023r5,
+                       irisr5.app[, !(names(irisr5.app) %in% "IRISr5_LIB")],
+                       by = "IRISr5_CODE")
+    
+    i_i2023r5 <- i_i2023r5[, c("IRIS_CODE", "IRISF_CODE", "IRISr5_CODE", "IRISr5_LIB", cols)]
+    
+    # Ajout Mayotte
+    myt <- .add_mayotte(i_i2023, "IRISF_CODE", "IRISF_LIB", "IRISr5_CODE", "IRISr5_LIB")
+    myt <- myt[, colnames(i_i2023r5)]
+    i_i2023r5 <- rbind(i_i2023r5, myt)
+    
+    i_i2023r5 <- .clean_tabl(i_i2023r5)
+    
+    return(i_i2023r5)
+  }
+  
   # IRIS d'une annee autre que 2023 vers les communes de 2023
   .ixxxx_to_c2023 <- function() {
-    irisf.pass <- .read_csv(path_irisf.pass)
-    comf.app <- .read_csv(path_comf.app)
+    irisf.pass <- .read_file(path_irisf.pass, "csv")
+    comf.app <- .read_file(path_comf.app, "csv")
     
     i_c2023 <- merge(irisf.pass, 
                      comf.app, 
@@ -138,14 +164,12 @@ asf_maa <- function(md = NULL,
     
     i_c2023 <- i_c2023[, c("IRIS_CODE", "COMF_CODE", "COMF_LIB", cols)]
     
-    i_c2023[] <- lapply(i_c2023, as.character)
-    i_c2023 <- i_c2023[order(i_c2023[[1]]), ]
-    row.names(i_c2023) <- NULL
+    i_c2023 <- .clean_tabl(i_c2023)
     
     return(i_c2023)
   }
   
-  # IRIS d'une annee autre que 2023 vers les communes de 2023 regroupees
+  # IRIS d'une annee autre que 2023 vers les communes de 2023 regroupees (2 000 hab)
   .ixxxx_to_c2023r2 <- function() {
     i_c2023 <- .ixxxx_to_c2023()
     c_c2023r2 <- .cxxxx_to_c2023r2()
@@ -154,29 +178,47 @@ asf_maa <- function(md = NULL,
     i_c2023 <- i_c2023[, c("IRIS_CODE", "COM_CODE", "COMF_CODE")]
     
     i_c2023r2 <- merge(i_c2023,
-                       c_c2023r2[, -2],
+                       c_c2023r2[, !(names(c_c2023r2) %in% c("COM_TYPE", "COMF_CODE"))],
                        by = "COM_CODE")
     
-    i_c2023r2 <- i_c2023r2[, -1]
+    i_c2023r2 <- i_c2023r2[, !(names(i_c2023r2) %in% c("COM_CODE"))]
     
-    i_c2023r2[] <- lapply(i_c2023r2, as.character)
-    i_c2023r2 <- i_c2023r2[order(i_c2023r2[[1]]), ]
-    row.names(i_c2023r2) <- NULL
+    i_c2023r2 <- .clean_tabl(i_c2023r2)
     
     return(i_c2023r2)
   }
   
-  # IRIS de 2023 vers les IRIS de 2023 regroupes
+  # IRIS d'une annee autre que 2023 vers les communes de 2023 regroupees (5 000 hab)
+  .ixxxx_to_c2023r5 <- function() {
+    i_c2023 <- .ixxxx_to_c2023()
+    c_c2023r5 <- .cxxxx_to_c2023r5()
+    
+    i_c2023$COM_CODE <- substr(i_c2023$IRIS_CODE, 1, 5)
+    i_c2023 <- i_c2023[, c("IRIS_CODE", "COM_CODE", "COMF_CODE")]
+    
+    i_c2023r5 <- merge(i_c2023,
+                       c_c2023r5[, !(names(c_c2023r5) %in% c("COM_TYPE", "COMF_CODE"))],
+                       by = "COM_CODE")
+    
+    i_c2023r5 <- i_c2023r5[, !(names(i_c2023r5) %in% "COM_CODE")]
+    
+    i_c2023r5 <- .clean_tabl(i_c2023r5)
+    
+    return(i_c2023r5)
+  }
+  
+  # IRIS de 2023 vers les IRIS de 2023 regroupes (2 000 hab)
   .i2023_to_i2023r2 <- function() {
-    irisr2.pass <- .read_csv(path_irisr2.pass)
-    irisr2.app <- .read_csv(path_irisr2.app)
+    irisr2.pass <- .read_file(path_irisr2.pass, "csv")
+    irisr2.app <- .read_file(path_irisr2.app, "csv")
     i_i2023 <- .ixxxx_to_i2023()
     
     i_i2023r2 <- merge(i_i2023[, c("IRIS_CODE", "IRISF_CODE")],
                        irisr2.pass[, c("IRISF_CODE", "IRISrS_CODE", "IRISrS_LIB", "IRISrD_CODE")],
                        by = "IRISF_CODE")
+    
     i_i2023r2 <- merge(i_i2023r2,
-                       irisr2.app[, -2],
+                       irisr2.app[, !(names(irisr2.app) %in% "IRISrD_LIB")],
                        by = "IRISrD_CODE")
     
     i_i2023r2 <- i_i2023r2[, c("IRIS_CODE", "IRISF_CODE", "IRISrS_CODE", "IRISrS_LIB", cols)]
@@ -186,11 +228,21 @@ asf_maa <- function(md = NULL,
     myt <- myt[, colnames(i_i2023r2)]
     i_i2023r2 <- rbind(i_i2023r2, myt)
     
-    i_i2023r2[] <- lapply(i_i2023r2, as.character)
-    i_i2023r2 <- i_i2023r2[order(i_i2023r2[[1]]), ]
-    row.names(i_i2023r2) <- NULL
+    i_i2023r2 <- .clean_tabl(i_i2023r2)
     
     return(i_i2023r2)
+  }
+  
+  # IRIS de 2023 vers les IRIS de 2023 regroupes (5 000 hab)
+  .i2023_to_i2023r5 <- function() {
+    i_i2023 <- .ixxxx_to_i2023()
+    i_i2023r5 <- .ixxxx_to_i2023r5()
+    
+    i_i2023r5 <- i_i2023r5[i_i2023r5$IRIS_CODE %in% i_i2023$IRISF_CODE, ]
+    
+    i_i2023r5 <- .clean_tabl(i_i2023r5)
+    
+    return(i_i2023r5)
   }
   
   # IRIS de 2023 vers les communes de 2023
@@ -199,30 +251,42 @@ asf_maa <- function(md = NULL,
     i_c2023 <- .ixxxx_to_c2023()
     
     i_c2023 <- i_c2023[i_c2023$IRIS_CODE %in% i_i2023$IRISF_CODE, ]
-    colnames(i_c2023)[1] <- "IRISF_CODE"
-    row.names(i_c2023) <- NULL
+
+    i_c2023 <- .clean_tabl(i_c2023)
     
     return(i_c2023)
   }
   
-  # IRIS de 2023 vers les communes de 2023 regroupees
+  # IRIS de 2023 vers les communes de 2023 regroupees (2 000 hab)
   .i2023_to_c2023r2 <- function() {
     i_i2023 <- .ixxxx_to_i2023()
     i_c2023r2 <- .ixxxx_to_c2023r2()
     
     i_c2023r2 <- i_c2023r2[i_c2023r2$IRIS_CODE %in% i_i2023$IRISF_CODE, ]
-    colnames(i_c2023r2)[1] <- "IRISF_CODE"
-    row.names(i_c2023r2) <- NULL
+
+    i_c2023r2 <- .clean_tabl(i_c2023r2)
     
     return(i_c2023r2)
   }
   
+  # IRIS de 2023 vers les communes de 2023 regroupees (5 000 hab)
+  .i2023_to_c2023r5 <- function() {
+    i_i2023 <- .ixxxx_to_i2023()
+    i_c2023r5 <- .ixxxx_to_c2023r5()
+    
+    i_c2023r5 <- i_c2023r5[i_c2023r5$IRIS_CODE %in% i_i2023$IRISF_CODE, ]
+    
+    i_c2023r5 <- .clean_tabl(i_c2023r5)
+    
+    return(i_c2023r5)
+  }
+  
   # Communes d'une annee autre que 2023 vers les communes de 2023
   .cxxxx_to_c2023 <- function() { 
-    comf.app <- .read_csv(path_comf.app)
-    comf.pass <- .read_csv(path_comf.pass)
+    comf.app <- .read_file(path_comf.app, "csv")
+    comf.pass <- .read_file(path_comf.pass, "csv")
     
-    c_c2023 <- merge(comf.pass[, -c(2, 5)], 
+    c_c2023 <- merge(comf.pass[, !(names(comf.pass) %in% c("COM_TYP", "COMF_LIB"))], 
                      comf.app, 
                      by = "COMF_CODE", 
                      all.x = TRUE)
@@ -232,23 +296,21 @@ asf_maa <- function(md = NULL,
                            "COMF_CODE", "COMF_LIB", 
                            cols)]
     
-    c_c2023[] <- lapply(c_c2023, as.character)
-    c_c2023 <- c_c2023[order(c_c2023[[1]]), ]
-    row.names(c_c2023) <- NULL
+    c_c2023 <- .clean_tabl(c_c2023)
     
     return(c_c2023)
   }
   
-  # Communes d'une annee autre que 2023 vers les communes de 2023 regroupees
+  # Communes d'une annee autre que 2023 vers les communes de 2023 regroupees (2 000 hab)
   .cxxxx_to_c2023r2 <- function() { 
-    irisr2.app <- .read_csv(path_irisr2.app)
-    comf.pass <- .read_csv(path_comf.pass)
+    irisr2.app <- .read_file(path_irisr2.app, "csv")
+    comf.pass <- .read_file(path_comf.pass, "csv")
     c_c2023 <- .cxxxx_to_c2023()
     
     id_list <- strsplit(irisr2.app$COMF_CODE_MULTI, " \\| ")
     id_tabl <- data.frame(
       COMF_CODE = unlist(id_list),
-      COMR_CODE = rep(irisr2.app$COMF_CODE_MULTI, sapply(id_list, length))
+      COMR2_CODE = rep(irisr2.app$COMF_CODE_MULTI, sapply(id_list, length))
     )
     id_tabl <- id_tabl[!duplicated(id_tabl$COMF_CODE), ]
     
@@ -257,45 +319,99 @@ asf_maa <- function(md = NULL,
                        by = "COMF_CODE",
                        all.x = TRUE)
     
-    irisr2.app <- irisr2.app[, c(5:6, 10:25)]
+    irisr2.app <- irisr2.app[, names(irisr2.app) %in% c("COMF_CODE_MULTI", "COMF_LIB", cols)]
     irisr2.app <- irisr2.app[!duplicated(irisr2.app$COMF_CODE_MULTI), ]
     
     c_c2023r2 <- merge(c_c2023r2, 
                        irisr2.app, 
-                       by.x = "COMR_CODE", 
+                       by.x = "COMR2_CODE", 
                        by.y = "COMF_CODE_MULTI", 
                        all.x = TRUE)
     
     names(c_c2023r2)[4] <- "COM_TYPE"
-    names(c_c2023r2)[7] <- "COMR_LIB"
+    names(c_c2023r2)[7] <- "COMR2_LIB"
     
     c_c2023r2 <- c_c2023r2[, c("COM_CODE", "COM_TYPE", 
                                "COMF_CODE",
-                               "COMR_CODE", "COMR_LIB", 
+                               "COMR2_CODE", "COMR2_LIB", 
                                cols)]
     
-    myt <- .add_mayotte(c_c2023, "COMF_CODE", "COMF_LIB", "COMR_CODE", "COMR_LIB")
+    myt <- .add_mayotte(c_c2023, "COMF_CODE", "COMF_LIB", "COMR2_CODE", "COMR2_LIB")
     myt <- myt[, colnames(c_c2023r2)]
-    
     c_c2023r2 <- rbind(c_c2023r2[!grepl("^976", c_c2023r2$COM_CODE), ], myt)
     
-    c_c2023r2[] <- lapply(c_c2023r2, as.character)
-    c_c2023r2 <- c_c2023r2[order(c_c2023r2[[1]]), ]
-    row.names(c_c2023r2) <- NULL
+    c_c2023r2 <- .clean_tabl(c_c2023r2)
     
     return(c_c2023r2)
   }
   
-  # Communes de 2023 vers les communes de 2023 regroupees
+  # Communes d'une annee autre que 2023 vers les communes de 2023 regroupees (5 000 hab)
+  .cxxxx_to_c2023r5 <- function() { 
+    irisr5.app <- .read_file(path_irisr5.app.iris, "csv")
+    comf.pass <- .read_file(path_comf.pass, "csv")
+    c_c2023 <- .cxxxx_to_c2023()
+    
+    id_list <- strsplit(irisr5.app$COMF_CODE_MULTI, " \\| ")
+    id_tabl <- data.frame(
+      COMF_CODE = unlist(id_list),
+      COMR5_CODE = rep(irisr5.app$COMF_CODE_MULTI, sapply(id_list, length))
+    )
+    id_tabl <- id_tabl[!duplicated(id_tabl$COMF_CODE), ]
+    
+    c_c2023r5 <- merge(comf.pass, 
+                       id_tabl, 
+                       by = "COMF_CODE", 
+                       all.x = TRUE)
+    
+    irisr5.app <- irisr5.app[, names(irisr5.app) %in% c("COMF_CODE_MULTI", "COMF_LIB", cols)]
+    irisr5.app <- irisr5.app[!duplicated(irisr5.app$COMF_CODE_MULTI), ]
+    
+    c_c2023r5 <- merge(c_c2023r5[, !(names(c_c2023r5) %in% "COMF_LIB")], 
+                       irisr5.app, 
+                       by.x = "COMR5_CODE", 
+                       by.y = "COMF_CODE_MULTI", 
+                       all.x = TRUE)
+    
+    names(c_c2023r5)[4] <- "COM_TYPE"
+    names(c_c2023r5)[6] <- "COMR5_LIB"
+    
+    c_c2023r5 <- c_c2023r5[, c("COM_CODE", "COM_TYPE", 
+                               "COMF_CODE",
+                               "COMR5_CODE", "COMR5_LIB", 
+                               cols)]
+    
+    myt <- .add_mayotte(c_c2023, "COMF_CODE", "COMF_LIB", "COMR5_CODE", "COMR5_LIB")
+    myt <- myt[, colnames(c_c2023r5)]
+    
+    c_c2023r5 <- rbind(c_c2023r5[!grepl("^976", c_c2023r5$COM_CODE), ], myt)
+    
+    c_c2023r5 <- .clean_tabl(c_c2023r5)
+    
+    return(c_c2023r5)
+  }
+  
+  # Communes de 2023 vers les communes de 2023 regroupees (2 000 hab)
   .c2023_to_c2023r2 <- function() {
     c_c2023 <- .cxxxx_to_c2023()
     c_c2023r2 <- .cxxxx_to_c2023r2()
     
     c_c2023r2 <- c_c2023r2[c_c2023r2$COM_CODE == c_c2023$COMF_CODE, ]
-    colnames(c_c2023r2)[1] <- "COMF_CODE"
-    row.names(c_c2023r2) <- NULL
+
+    c_c2023r2 <- .clean_tabl(c_c2023r2)
     
     return(c_c2023r2)
+  }
+  
+  # Communes de 2023 vers les communes de 2023 regroupees (5 000 hab)
+  .c2023_to_c2023r5 <- function() {
+    c_c2023 <- .cxxxx_to_c2023()
+    c_c2023r5 <- .cxxxx_to_c2023r5()
+    
+    c_c2023r5 <- c_c2023r5[c_c2023r5$COM_CODE %in% c_c2023$COMF_CODE, ]
+    
+    c_c2023r5 <- .clean_tabl(c_c2023r5)
+    
+    return(c_c2023r5)
   }
   
   # PROCESSING ----------------------------------------------------------------
@@ -333,28 +449,37 @@ asf_maa <- function(md = NULL,
   
   # Cas ou seul le fond geographique est demande
   if (is.null(md) && is.null(ma) && geom) {
-    result <- .read_sf(path_irisf)
+    result <- .read_file(path_irisf, "sf")
     return(result)
   }
   
-  # Traitement des tables de passages et d'appartennace
-  if (md == "iris_xxxx" && ma == "iris_f")  result <- .ixxxx_to_i2023()
-  if (md == "iris_xxxx" && ma == "iris_r2") result <- .ixxxx_to_i2023r2()
-  if (md == "iris_xxxx" && ma == "com_f")   result <- .ixxxx_to_c2023()
-  if (md == "iris_xxxx" && ma == "com_r2")  result <- .ixxxx_to_c2023r2()
-  
-  if (md == "iris_2023" && ma == "iris_r2") result <- .i2023_to_i2023r2()
-  if (md == "iris_2023" && ma == "com_f")   result <- .i2023_to_c2023()
-  if (md == "iris_2023" && ma == "com_r2")  result <- .i2023_to_c2023r2()
-  
-  if (md == "com_xxxx" && ma == "com_f")    result <- .cxxxx_to_c2023()
-  if (md == "com_xxxx" && ma == "com_r2")   result <- .cxxxx_to_c2023r2()
-  
-  if (md == "com_2023" && ma == "com_r2")   result <- .c2023_to_c2023r2()
+  # Traitement des tables de passages et d'appartennace en fonction du couple md / ma
+  result <- switch(
+    paste(md, ma),
+    "iris_xxxx iris_f"  = .ixxxx_to_i2023(),
+    "iris_xxxx iris_r2" = .ixxxx_to_i2023r2(),
+    "iris_xxxx iris_r5" = .ixxxx_to_i2023r5(),
+    "iris_xxxx com_f"   = .ixxxx_to_c2023(),
+    "iris_xxxx com_r2"  = .ixxxx_to_c2023r2(),
+    "iris_xxxx com_r5"  = .ixxxx_to_c2023r5(),
+    
+    "iris_2023 iris_r2" = .i2023_to_i2023r2(),
+    "iris_2023 iris_r5" = .i2023_to_i2023r5(),
+    "iris_2023 com_f"   = .i2023_to_c2023(),
+    "iris_2023 com_r2"  = .i2023_to_c2023r2(),
+    "iris_2023 com_r5"  = .i2023_to_c2023r5(),
+    
+    "com_xxxx com_f"    = .cxxxx_to_c2023(),
+    "com_xxxx com_r2"   = .cxxxx_to_c2023r2(),
+    "com_xxxx com_r5"   = .cxxxx_to_c2023r5(),
+    
+    "com_2023 com_r2"   = .c2023_to_c2023r2(),
+    "com_2023 com_r5"   = .c2023_to_c2023r5()
+  )
   
   # Ajout du fond en plus d'une table si les deux sont demandes
   if (geom) {
-    sf_irisf <- .read_sf(path_irisf)
+    sf_irisf <- .read_file(path_irisf, "sf")
     result <- list(
       tabl = result,
       geom = sf_irisf
