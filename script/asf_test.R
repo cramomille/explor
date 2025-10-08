@@ -17,8 +17,9 @@ library(sf)
 library(mapsf)
 library(asf)
 
+
 # Fond de carte ---------------------------------------------------------------
-mar <- asf_mar(md = "iris", ma = "comr", geom = TRUE)
+mar <- asf_mar(md = "iris_xxxx", ma = "com_r2", geom = TRUE)
 
 tabl <- mar$tabl
 geom <- mar$geom
@@ -30,7 +31,7 @@ geom <- asf_drom(geom, id = "IRISF_CODE")
 comr <- asf_fond(geom, 
                  tabl, 
                  by = "COMF_CODE", 
-                 maille = "COMR_CODE", 
+                 maille = "COMR2_CODE", 
                  keep = "DEP") 
 
 # Creation de zooms
@@ -52,7 +53,7 @@ comr_data <- asf_data(data,
                       tabl, 
                       by.x = "IRIS", 
                       by.y = "IRIS_CODE", 
-                      maille = "COMR_CODE", 
+                      maille = "COMR2_CODE", 
                       vars = c(4:13), 
                       funs = c("sum"))
 
@@ -61,9 +62,7 @@ comr_data <- asf_data(data,
 fondata <- asf_fondata(comr_simply, 
                        zoom, 
                        comr_data, 
-                       by = "COMR_CODE")
-
-sum(data$P20_POP, na.rm = TRUE) - sum(fondata$P20_POP, na.rm = TRUE)
+                       by = "COMR2_CODE")
 
 
 # Creation de cartes ----------------------------------------------------------
