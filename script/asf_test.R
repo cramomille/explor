@@ -12,10 +12,58 @@
 #                         host = "gitlab.huma-num.fr",
 #                         build_vignettes = TRUE)
 
-
 library(sf)
 library(mapsf)
 library(asf)
+
+
+
+ex <- asf_example()
+
+geom <- ex$epci_2023
+
+# poly <- asf_drom(geom, id = "DEP")
+poly <- geom[geom$DEP == "06", ]
+
+poin <- st_centroid(poly)
+lign <- st_cast(poly[poly$EPCI == "240600593", ], "MULTILINESTRING")
+
+poly <- st_transform(poly, crs = "EPSG:2154")
+poin <- st_transform(poin, crs = "EPSG:2154")
+lign <- st_transform(lign, crs = "EPSG:2154")
+
+mf_map(poly)
+mf_map(poin, add = TRUE)
+mf_map(lign, col = "white", add = TRUE)
+
+z_poly <- asf_zoom(poly, coords = c(7.174, 43.784), r = 20000)
+z_poin <- asf_zoom(poin, coords = c(7.174, 43.784), r = 20000, f_ref = poly)
+z_lign <- asf_zoom(lign, coords = c(7.174, 43.784), r = 20000, f_ref = poly)
+
+zoom_poly <- z_poly$zooms
+zoom_poin <- z_poin$zooms
+zoom_lign <- z_lign$zooms
+
+mf_map(zoom_poly)
+mf_map(zoom_poin, add = TRUE)
+mf_map(zoom_lign, add = TRUE)
+
+poly <- rbind(poly, zoom_poly)
+poin <- rbind(poin, zoom_poin)
+lign <- rbind(lign, zoom_lign)
+
+mf_map(poly)
+mf_map(poin, add = TRUE)
+mf_map(lign, col = "white", add = TRUE)
+
+
+
+
+
+
+
+
+
 
 
 # Fond de carte ---------------------------------------------------------------
