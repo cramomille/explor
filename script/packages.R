@@ -1,17 +1,24 @@
 parallel::detectCores()
 options(Ncpus = 4)
 
+install.packages("archive")
 install.packages("arrow")
 install.packages("assertthat")
 install.packages("devtools")
+
 install.packages("dplyr")
 install.packages("dbplyr")
 install.packages("duckdb")
+install.packages("duckdbfs")
+install.packages("duckspatial")
+install.packages("duckplyr")
+
 install.packages("ggplot2")
 install.packages("haven")
 install.packages("knitr")
 install.packages("mapsf")
 install.packages("MTA")
+
 install.packages("readxl")
 install.packages("remotes")
 install.packages("roxygen2")

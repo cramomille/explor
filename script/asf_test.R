@@ -15,54 +15,71 @@
 library(sf)
 library(mapsf)
 library(asf)
+library(ggplot2)
+
+
+data <- data.frame(
+  com = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10"),
+  tav = c("1", "1", "1", "2", "2", "2", "3", "3", "4", "4"),
+  cav = c("1", "2", "3", "1", "2", "3", "1", "2", "1", "2"),
+  pop = c(50, 100, 150, 200, 250, 300, 350, 400, 450, 500),
+  m50 = c(20, 30, 50, 80, 130, 210, 220, 230, 450, 460),
+  p50 = c(30, 70, 100, 120, 120, 90, 130, 170, 0, 40),
+  cah = c("c1", "c2", "c2", "c3", "c3", "c2", "c3", "c4", "c1", "c1")
+)
+
+palette <- asf_palette(type = "qua", nb = 4)
+
+asf_plot_typo(data, vars = "cah", typo = "tav", pal = palette)
+asf_plot_typo(data, vars = c("m50", "p50"), typo = "tav", pal = palette)
+asf_plot_vars(data, vars = c("m50", "p50"), typo = "tav", pal = palette)
 
 
 
-ex <- asf_example()
-
-geom <- ex$epci_2023
-
-# poly <- asf_drom(geom, id = "DEP")
-poly <- geom[geom$DEP == "06", ]
-
-poin <- st_centroid(poly)
-lign <- st_cast(poly[poly$EPCI == "240600593", ], "MULTILINESTRING")
-
-poly <- st_transform(poly, crs = "EPSG:2154")
-poin <- st_transform(poin, crs = "EPSG:2154")
-lign <- st_transform(lign, crs = "EPSG:2154")
-
-mf_map(poly)
-mf_map(poin, add = TRUE)
-mf_map(lign, col = "white", add = TRUE)
-
-z_poly <- asf_zoom(poly, coords = c(7.174, 43.784), r = 20000)
-z_poin <- asf_zoom(poin, coords = c(7.174, 43.784), r = 20000, f_ref = poly)
-z_lign <- asf_zoom(lign, coords = c(7.174, 43.784), r = 20000, f_ref = poly)
-
-zoom_poly <- z_poly$zooms
-zoom_poin <- z_poin$zooms
-zoom_lign <- z_lign$zooms
-
-mf_map(zoom_poly)
-mf_map(zoom_poin, add = TRUE)
-mf_map(zoom_lign, add = TRUE)
-
-poly <- rbind(poly, zoom_poly)
-poin <- rbind(poin, zoom_poin)
-lign <- rbind(lign, zoom_lign)
-
-mf_map(poly)
-mf_map(poin, add = TRUE)
-mf_map(lign, col = "white", add = TRUE)
+asf_plot_typa(data, vars = c("m50", "p50"), typo = c("tav", "cav"), pal = palette, taille = TRUE)
 
 
 
 
 
 
-
-
+# ex <- asf_example()
+# 
+# geom <- ex$epci_2023
+# 
+# # poly <- asf_drom(geom, id = "DEP")
+# poly <- geom[geom$DEP == "06", ]
+# 
+# poin <- st_centroid(poly)
+# lign <- st_cast(poly[poly$EPCI == "240600593", ], "MULTILINESTRING")
+# 
+# poly <- st_transform(poly, crs = "EPSG:2154")
+# poin <- st_transform(poin, crs = "EPSG:2154")
+# lign <- st_transform(lign, crs = "EPSG:2154")
+# 
+# mf_map(poly)
+# mf_map(poin, add = TRUE)
+# mf_map(lign, col = "white", add = TRUE)
+# 
+# z_poly <- asf_zoom(poly, coords = c(7.174, 43.784), r = 20000)
+# z_poin <- asf_zoom(poin, coords = c(7.174, 43.784), r = 20000, f_ref = poly)
+# z_lign <- asf_zoom(lign, coords = c(7.174, 43.784), r = 20000, f_ref = poly)
+# 
+# zoom_poly <- z_poly$zooms
+# zoom_poin <- z_poin$zooms
+# zoom_lign <- z_lign$zooms
+# 
+# mf_map(zoom_poly)
+# mf_map(zoom_poin, add = TRUE)
+# mf_map(zoom_lign, add = TRUE)
+# 
+# poly <- rbind(poly, zoom_poly)
+# poin <- rbind(poin, zoom_poin)
+# lign <- rbind(lign, zoom_lign)
+# 
+# mf_map(poly)
+# mf_map(poin, add = TRUE)
+# mf_map(lign, col = "white", add = TRUE)
 
 
 
