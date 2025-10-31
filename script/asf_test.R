@@ -12,94 +12,73 @@
 #                         host = "gitlab.huma-num.fr",
 #                         build_vignettes = TRUE)
 
-library(sf)
-library(mapsf)
+
 library(asf)
-library(ggplot2)
+library(mapsf)
 
 
-data <- data.frame(
-  com = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10"),
-  tav = c("1", "1", "1", "2", "2", "2", "3", "3", "4", "4"),
-  cav = c("1", "2", "3", "1", "2", "3", "1", "2", "1", "2"),
-  pop = c(50, 100, 150, 200, 250, 300, 350, 400, 450, 500),
-  m50 = c(20, 30, 50, 80, 130, 210, 220, 230, 450, 460),
-  p50 = c(30, 70, 100, 120, 120, 90, 130, 170, 0, 40),
-  cah = c("c1", "c2", "c2", "c3", "c3", "c2", "c3", "c4", "c1", "c1")
-)
+# FOND DE CARTE ---------------------------------------------------------------
+## asf_mar() ----
+# a - Telechargement (depuis le Sharedocs) et lecture des geometries de 
+# reference (IRIS 2023)
+geom <- asf_mar(geom = TRUE)
 
-palette <- asf_palette(type = "qua", nb = 4)
+# b - Lecture (depuis ma machine) des geometries de reference (IRIS 2023)
+geom <- asf_mar(geom = TRUE, dir = "chemin/vers/dossier")
 
-asf_plot_typo(data, vars = "cah", typo = "tav", pal = palette)
-asf_plot_typo(data, vars = c("m50", "p50"), typo = "tav", pal = palette)
-asf_plot_vars(data, vars = c("m50", "p50"), typo = "tav", pal = palette)
+# c - Telechargement (depuis le Sharedocs) et lecture d'une table de passage 
+# entre les IRIS et les communes regroupees (2 000 hab)
+tabl <- asf_mar(md = "iris_xxxx", ma = "com_r2")
 
+# d - Lecture (depuis ma machine) d'une table de passage entre les IRIS et les 
+# communes regroupees (2 000 hab)
+geom <- asf_mar(md = "iris_xxxx", ma = "com_r2", dir = "chemin/vers/dossier")
 
+# e - Telechargement (depuis le Sharedocs) et lecture d'une table de passage 
+# entre les IRIS et les communes regroupees (2 000 hab) et des geometries de 
+# reference (IRIS 2023)
+x <- asf_mar(md = "iris_xxxx", ma = "com_r2", geom = TRUE)
+tabl <- x$tabl
+geom <- x$geom
 
-asf_plot_typa(data, vars = c("m50", "p50"), typo = c("tav", "cav"), pal = palette, taille = TRUE)
-
-
-
-
-
-
-# ex <- asf_example()
-# 
-# geom <- ex$epci_2023
-# 
-# # poly <- asf_drom(geom, id = "DEP")
-# poly <- geom[geom$DEP == "06", ]
-# 
-# poin <- st_centroid(poly)
-# lign <- st_cast(poly[poly$EPCI == "240600593", ], "MULTILINESTRING")
-# 
-# poly <- st_transform(poly, crs = "EPSG:2154")
-# poin <- st_transform(poin, crs = "EPSG:2154")
-# lign <- st_transform(lign, crs = "EPSG:2154")
-# 
-# mf_map(poly)
-# mf_map(poin, add = TRUE)
-# mf_map(lign, col = "white", add = TRUE)
-# 
-# z_poly <- asf_zoom(poly, coords = c(7.174, 43.784), r = 20000)
-# z_poin <- asf_zoom(poin, coords = c(7.174, 43.784), r = 20000, f_ref = poly)
-# z_lign <- asf_zoom(lign, coords = c(7.174, 43.784), r = 20000, f_ref = poly)
-# 
-# zoom_poly <- z_poly$zooms
-# zoom_poin <- z_poin$zooms
-# zoom_lign <- z_lign$zooms
-# 
-# mf_map(zoom_poly)
-# mf_map(zoom_poin, add = TRUE)
-# mf_map(zoom_lign, add = TRUE)
-# 
-# poly <- rbind(poly, zoom_poly)
-# poin <- rbind(poin, zoom_poin)
-# lign <- rbind(lign, zoom_lign)
-# 
-# mf_map(poly)
-# mf_map(poin, add = TRUE)
-# mf_map(lign, col = "white", add = TRUE)
+# f - Lecture (depuis ma machine) d'une table de passage entre les IRIS et les 
+# communes regroupees (2 000 hab) et des geometries de reference (IRIS 2023)
+x <- asf_mar(md = "iris_xxxx", ma = "com_r2", geom = TRUE, dir = "chemin/vers/dossier")
+tabl <- x$tabl
+geom <- x$geom
 
 
-
-# Fond de carte ---------------------------------------------------------------
-mar <- asf_mar(md = "iris_xxxx", ma = "com_r2", geom = TRUE)
-
-tabl <- mar$tabl
-geom <- mar$geom
-
-# Repositionnement des DROM 
+## asf_drom() ----
+# a - Repositionement des geometries des DROM
 geom <- asf_drom(geom, id = "IRISF_CODE")
 
-# Creation des communes agregees a partir des iris de reference
+# b - Repositionement des geometries des DROM et reprojection du resultat
+geom <- asf_drom(geom, id = "IRISF_CODE", epsg = "32631")
+
+
+## asf_fond() ----
+# a - Agregation des entites d'une couche pour former un autre maillage (les 
+# identifiants de cet autre maillage se trouvent dans la couche)
+comr <- asf_fond(geom, 
+                 maille = "COMR2_CODE") 
+
+# b - Agregation des entites d'une couche pour former un autre maillage (les 
+# identifiants de cet autre maillage se trouvent dans une table de passage)
+comr <- asf_fond(geom, 
+                 tabl, 
+                 by = "COMF_CODE", 
+                 maille = "COMR2_CODE") 
+
+# c - Agregation des entites d'une couche pour former un autre maillage et
+# conservation d'autres identifiants d'agregation
 comr <- asf_fond(geom, 
                  tabl, 
                  by = "COMF_CODE", 
                  maille = "COMR2_CODE", 
-                 keep = "DEP") 
+                 keep = c("DEP", "REG"))
 
-# Creation de zooms
+
+## asf_zoom() ----
 z <- asf_zoom(comr, 
               places = c("Paris", "Avignon", "Bergerac", "Annecy"))
 
@@ -107,11 +86,52 @@ zoom <- z$zooms
 label <- z$labels
 point <- z$points
 
-# Simplification des geometries du fond de carte
+
+# TABLEAU DE DONNEES ----------------------------------------------------------
+
+## asf_data() ----
+
+## asf_fondata() ----
+
+
+
+# CREATION DE CARTES ----------------------------------------------------------
+
+## asf_simplify() ----
+
+## asf_borders() ----
+
+## asf_palette() ----
+
+
+
+# CREATION DE GRAPHIQUES ------------------------------------------------------
+
+## asf_plot_glis() ----
+
+## asf_plot_typo() ----
+
+## asf_plot_vars() ----
+
+
+
+
+
+
+
+
+
+z <- asf_zoom(comr, 
+              places = c("Paris", "Avignon", "Bergerac", "Annecy"))
+
+zoom <- z$zooms
+label <- z$labels
+point <- z$points
+
 comr_simply <- asf_simplify(comr)
 
 
-# Tableau de donnees ----------------------------------------------------------
+
 data <- read.csv("input/csp_2020.csv")
 
 comr_data <- asf_data(data, 
@@ -123,30 +143,25 @@ comr_data <- asf_data(data,
                       funs = c("sum"))
 
 
-# Jointure --------------------------------------------------------------------
+
 fondata <- asf_fondata(comr_simply, 
                        zoom, 
                        comr_data, 
                        by = "COMR2_CODE")
 
 
-# Creation de cartes ----------------------------------------------------------
-# Calcul de la part des ouvriers et ouvrieres
 fondata$pct_var <- fondata$C20_POP15P_CS6 / fondata$C20_POP15P * 100
 
-# Definition des bornes des classes
 q6 <- quantile(fondata$pct_var, 
                probs = c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1), 
                na.rm = TRUE)
 
-# Creation des limites departementales
 geom$DEP_CODE <- substr(geom$COMF_CODE, 1, 2)
 dep <- asf_borders(geom, by = "DEP_CODE", keep = 0.01)
 
-# Choix d'une palette de couleurs
 pal <- asf_palette("seq")
 
-# Utilisation du package mapsf
+
 mf_map(fondata, 
        var = "pct_var", 
        type = "choro", 
@@ -168,10 +183,9 @@ mf_label(label,
          cex = 0.8)
 
 
-# Creation de graphiques ------------------------------------------------------
 data <- read.csv("input/csp_2020.csv")
 
-tabl <- asf_mar(md = "iris", ma = "irisr")
+tabl <- asf_mar(md = "iris_xxxx", ma = "iris_r2", dir = "input/mar")
 
 tmp <- merge(data, tabl, by.x = "IRIS", by.y = "IRIS_CODE", all.x = TRUE)
 
@@ -183,6 +197,19 @@ asf_plot_typo(tmp,
               order.t = c("5", "1", "2", "3", "4", "0"),
               pal = pal
               )
+
+asf_plot_typo(tmp,
+              vars = c(6:13),
+              typo = c("TAAV2017", "CATEAAV2020"), 
+              order.t = c("30", "20", "13", "12", "11"),
+              pal = pal, 
+              eff = TRUE
+              )
+
+
+
+
+
 
 pal <- asf_palette(pal = "tulipe", nb = 6)
 asf_plot_vars(tmp,
@@ -199,3 +226,54 @@ asf_plot_vars(tmp,
               typo = "TAAV2017",
               pal = pal
               )
+
+
+
+
+#
+
+data <- data.frame(
+  com = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10"),
+  tav = c("1", "1", "1", "1", "2", "2", "2", "2", "3", "3"),
+  cav = c("1", "1", "2", "2", "1", "1", "2", "2", "1", "2"),
+  pop = c(50, 100, 150, 200, 250, 300, 350, 400, 450, 500),
+  m50 = c(20, 30, 50, 80, 130, 210, 220, 230, 450, 460),
+  p50 = c(30, 70, 100, 120, 120, 90, 130, 170, 0, 40),
+  cah = c("c1", "c2", "c2", "c1", "c2", "c2", "c1", "c2", "c1", "c1")
+)
+
+palette <- asf_palette(type = "qua")
+
+
+
+asf_plot_typa(data, vars = "cah", typo = "tav", pal = palette)
+asf_plot_typa(data, vars = c("m50", "p50"), typo = "tav", pal = palette)
+
+asf_plot_typa(data, vars = "cah", typo = c("tav", "cav"), pal = palette)
+asf_plot_typa(data, vars = c("m50", "p50"), typo = c("tav", "cav"), pal = palette)
+
+
+asf_plot_typa(data, vars = "cah", typo = "tav", pal = palette, eff = TRUE)
+asf_plot_typa(data, vars = c("m50", "p50"), typo = "tav", pal = palette, eff = TRUE)
+
+asf_plot_typa(data, vars = "cah", typo = c("tav", "cav"), pal = palette, eff = TRUE)
+asf_plot_typa(data, vars = c("m50", "p50"), typo = c("tav", "cav"), pal = palette, eff = TRUE)
+
+
+asf_plot_varo(data, vars = "cah", typo = "tav", pal = palette)
+asf_plot_varo(data, vars = "m50", typo = "tav", pal = palette)
+asf_plot_varo(data, vars = c("m50", "p50"), typo = "tav", pal = palette)
+
+asf_plot_varo(data, vars = "cah", typo = c("tav", "cav"), pal = palette)
+asf_plot_varo(data, vars = "m50", typo = c("tav", "cav"), pal = palette)
+asf_plot_varo(data, vars = c("m50", "p50"), typo = c("tav", "cav"), pal = palette)
+
+
+asf_plot_varo(data, vars = "cah", typo = "tav", pal = palette, eff = TRUE)
+asf_plot_varo(data, vars = "m50", typo = "tav", pal = palette, eff = TRUE)
+asf_plot_varo(data, vars = c("m50", "p50"), typo = "tav", pal = palette, eff = TRUE)
+
+asf_plot_varo(data, vars = "cah", typo = c("tav", "cav"), pal = palette, eff = TRUE)
+asf_plot_varo(data, vars = "m50", typo = c("tav", "cav"), pal = palette, eff = TRUE)
+asf_plot_varo(data, vars = c("m50", "p50"), typo = c("tav", "cav"), pal = palette, eff = TRUE)
+
