@@ -24,63 +24,134 @@ library(mapsf)
 geom <- asf_mar(geom = TRUE)
 
 # b - Lecture (depuis ma machine) des geometries de reference (IRIS 2023)
-geom <- asf_mar(geom = TRUE, dir = "chemin/vers/dossier")
+geom <- asf_mar(geom = TRUE, 
+                dir = "chemin/vers/mar")
 
 # c - Telechargement (depuis le Sharedocs) et lecture d'une table de passage 
 # entre les IRIS et les communes regroupees (2 000 hab)
-tabl <- asf_mar(md = "iris_xxxx", ma = "com_r2")
+tabl <- asf_mar(md = "iris_xxxx", 
+                ma = "com_r5")
 
 # d - Lecture (depuis ma machine) d'une table de passage entre les IRIS et les 
 # communes regroupees (2 000 hab)
-geom <- asf_mar(md = "iris_xxxx", ma = "com_r2", dir = "chemin/vers/dossier")
+geom <- asf_mar(md = "iris_xxxx", 
+                ma = "com_r5", 
+                dir = "chemin/vers/mar")
 
 # e - Telechargement (depuis le Sharedocs) et lecture d'une table de passage 
 # entre les IRIS et les communes regroupees (2 000 hab) et des geometries de 
 # reference (IRIS 2023)
-x <- asf_mar(md = "iris_xxxx", ma = "com_r2", geom = TRUE)
+x <- asf_mar(md = "iris_xxxx", 
+             ma = "com_r5", 
+             geom = TRUE)
+
 tabl <- x$tabl
 geom <- x$geom
 
 # f - Lecture (depuis ma machine) d'une table de passage entre les IRIS et les 
 # communes regroupees (2 000 hab) et des geometries de reference (IRIS 2023)
-x <- asf_mar(md = "iris_xxxx", ma = "com_r2", geom = TRUE, dir = "chemin/vers/dossier")
+x <- asf_mar(md = "iris_xxxx", 
+             ma = "com_r5", 
+             geom = TRUE, 
+             dir = "chemin/vers/mar")
+
 tabl <- x$tabl
 geom <- x$geom
 
 
 ## asf_drom() ----
 # a - Repositionement des geometries des DROM
-geom <- asf_drom(geom, id = "IRISF_CODE")
+geom <- asf_drom(f = geom, 
+                 id = "IRISF_CODE")
 
 # b - Repositionement des geometries des DROM et reprojection du resultat
-geom <- asf_drom(geom, id = "IRISF_CODE", epsg = "32631")
+geom <- asf_drom(f = geom, 
+                 id = "IRISF_CODE", 
+                 epsg = "32631")
 
 
 ## asf_fond() ----
 # a - Agregation des entites d'une couche pour former un autre maillage (les 
 # identifiants de cet autre maillage se trouvent dans la couche)
-comr <- asf_fond(geom, 
+comr <- asf_fond(f = geom, 
                  maille = "COMR2_CODE") 
 
 # b - Agregation des entites d'une couche pour former un autre maillage (les 
 # identifiants de cet autre maillage se trouvent dans une table de passage)
-comr <- asf_fond(geom, 
-                 tabl, 
+comr <- asf_fond(f = geom, 
+                 t = tabl, 
                  by = "COMF_CODE", 
                  maille = "COMR2_CODE") 
 
 # c - Agregation des entites d'une couche pour former un autre maillage et
 # conservation d'autres identifiants d'agregation
-comr <- asf_fond(geom, 
-                 tabl, 
+comr <- asf_fond(f = geom,
+                 t = tabl, 
                  by = "COMF_CODE", 
                  maille = "COMR2_CODE", 
                  keep = c("DEP", "REG"))
 
 
 ## asf_zoom() ----
-z <- asf_zoom(comr, 
+# a - Creation de zooms de 20 km de rayon autour de communes pre-renseignees a 
+# partir de leur nom
+z <- asf_zoom(f = comr, 
               places = c("Paris", "Avignon", "Bergerac", "Annecy"))
+
+zoom <- z$zooms
+label <- z$labels
+point <- z$points
+
+# b - Creation de zooms de 20 km de rayon autour de communes pre-renseignees a 
+# partir de leur categorie d'aav
+z <- asf_zoom(f = comr, 
+              places = c("4"))
+
+zoom <- z$zooms
+label <- z$labels
+point <- z$points
+
+# c - Creation de zooms de 20 km de rayon autour de communes pre-renseignees a 
+# partir de leur nom ou de leur categorie d'aav
+z <- asf_zoom(f = comr, 
+              places = c("Paris", "4", "Avignon", "Bergerac", "Annecy"),
+              r = 20000)
+
+zoom <- z$zooms
+label <- z$labels
+point <- z$points
+
+# d - Creation de zooms autour de differents points
+z <- asf_zoom(f = comr, 
+              coords = c(2.0317, 44.6085, 3.5731, 47.7979, -2.0477, 48.4540))
+
+zoom <- z$zooms
+label <- z$labels
+point <- z$points
+
+# e - Creation de zooms autour de differents points auxquels on attribue un nom
+z <- asf_zoom(f = comr, 
+              coords = c(2.0317, 44.6085, 3.5731, 47.7979, -2.0477, 48.4540), 
+              labels = c("Figeac", "Auxerre", "Dinan"))
+
+zoom <- z$zooms
+label <- z$labels
+point <- z$points
+
+# f - Creation de zooms avec toutes ces fonctionnalites
+z <- asf_zoom(f = comr, 
+              places = c("Paris", "4", "Avignon", "Bergerac", "Annecy"),
+              coords = c(2.0317, 44.6085, 3.5731, 47.7979, -2.0477, 48.4540), 
+              labels = c("Figeac", "Auxerre", "Dinan"))
+
+zoom <- z$zooms
+label <- z$labels
+point <- z$points
+
+# g - Creation de zooms sur deux couches differentes qu'on souhaite ensuite 
+# superposer
+z <- asf_zoom(f = comr, 
+              places = c("Paris", "Avignon", "Bergerac", "Annecy"), f_ref = )
 
 zoom <- z$zooms
 label <- z$labels
@@ -88,8 +159,32 @@ point <- z$points
 
 
 # TABLEAU DE DONNEES ----------------------------------------------------------
-
 ## asf_data() ----
+# a - Agregation des cellules d'un tableau de donnees (la colonne d'identifiants 
+# utilisee pour l'agregation se trouvent dans la couche)
+datar <- asf_data(d = data,
+                  maille = "COMR2_CODE", 
+                  vars = c(3:6), 
+                  funs = "sum")
+
+# b - Agregation des cellules d'un tableau de donnees (la colonne d'identifiants 
+# utilisee pour l'agregation se trouvent dans une table de passage)
+datar <- asf_data(d = data, 
+                  t = tabl, 
+                  by = "COM_CODE", 
+                  maille = "COMR2_CODE",
+                  vars = c(3:6), 
+                  funs = "sum")
+
+# c - Agregation des cellules d'un tableau de donnees et conservation d'autres 
+# identifiants d'agregation
+datar <- asf_data(d = data, 
+                  t = tabl, 
+                  by = "COM_CODE", 
+                  maille = "COMR2_CODE",
+                  vars = c(3:6), 
+                  funs = "sum",
+                  keep = c("DEP", "REG"))
 
 ## asf_fondata() ----
 
