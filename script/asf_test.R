@@ -12,7 +12,6 @@
 #                         host = "gitlab.huma-num.fr",
 #                         build_vignettes = TRUE)
 
-
 library(sf)
 library(asf)
 library(mapsf)
@@ -29,7 +28,7 @@ geom <- asf_mar(
 # b - Lecture (depuis ma machine) des geometries de reference (IRIS 2023)
 geom <- asf_mar(
   geom = TRUE, 
-  dir = "chemin/vers/mar"
+  dir = "input/mar"
 )
 
 # c - Telechargement (depuis le Sharedocs) et lecture d'une table de passage 
@@ -44,7 +43,7 @@ tabl <- asf_mar(
 tabl <- asf_mar(
   md = "iris_xxxx", 
   ma = "com_r2", 
-  dir = "chemin/vers/mar"
+  dir = "input/mar"
 )
 
 # e - Telechargement (depuis le Sharedocs) et lecture d'une table de passage 
@@ -65,7 +64,7 @@ x <- asf_mar(
   md = "iris_xxxx",
   ma = "com_r2",
   geom = TRUE,
-  dir = "chemin/vers/mar"
+  dir = "input/mar"
 )
 
 geom <- x$geom
@@ -281,23 +280,26 @@ com_r2_simply <- asf_simplify(
 
 
 ## asf_borders() ----
-# b - Recuperation des limites communales
-dep <- asf_borders(
+# a - Recuperation des limites communales (par defaut : simplification des 
+# geometries avec conservation de 10% des points)
+borders <- asf_borders(
   f = com_r2, 
   by = "COMR2_CODE"
 )
 
-# a - Recuperation des limites departementales
-dep <- asf_borders(
+# b - Recuperation des limites departementales (par defaut : simplification des 
+# geometries avec conservation de 10% des points)
+borders <- asf_borders(
   f = com_r2, 
   by = "DEP"
 )
 
-# a - Recuperation des limites departementales et simplification des geometries
-dep <- asf_borders(
+# c - Recuperation des limites departementales sans simplification des 
+# geometries
+borders <- asf_borders(
   f = com_r2, 
   by = "DEP",
-  keep = 0.1 
+  keep = 1 
 )
 
 
