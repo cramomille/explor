@@ -1,15 +1,21 @@
-# liste des communes pre-renseignees pour la fonction asf_zoom
+
+#                                       DEFINITION DES COORDONNEES DES COMMUNES
+#                                     PRE-RENSEIGNEES POUR LA FONCTION ASF_ZOOM
+#
+#                                                                antoine beroud
+#                                                                  janvier 2025
 
 library(asf)
 library(sf)
 library(mapsf)
 library(readxl)
 
+# Lecture de fichiers de l'INSEE sur les AAV
 aav <- read_xlsx("input/aav/AAV2020_au_01-01-2023.xlsx", sheet = "Composition_communale", skip = 5)
-mar <- asf_mar()
 
-tabl <- mar$ar01$d.comf.pass
-com <- mar$ar01$sf.comf
+# Lecture du fond geographique des irisf d'Aliette Roux
+tabl <- read.csv2("input/mar/d.comf.pass.csv")
+com <- st_read("input/mar/sf.comf.gpkg")
 
 com <- st_transform(com, 2154)
 
@@ -69,19 +75,18 @@ tmp <- tmp[tmp$TAAV2017 != "1", ]
 names(tmp)[1] <- "lab"
 names(tmp)[2] <- "aav"
 
-# Concatène tout le texte en un seul vecteur
+# Concatenation de tout le texte en un seul vecteur
 tout_texte <- paste(tmp$lab, collapse = "")
 
-# Sépare en caractères individuels
+# Separation en caracteres individuels
 chars <- strsplit(tout_texte, "")[[1]]
 
-# Garde les caractères non alphanumériques
+# Conservation des caracteres non alphanumeriques
 speciaux <- chars[!grepl("[A-Za-z0-9]", chars)]
 
-# Liste unique et triée
+# Creation d'une liste unique et triee
 speciaux_uniques <- sort(unique(speciaux))
 
-# Affiche
 print(speciaux_uniques)
 
 accents    <- c("à", "â", "ç", "é", "É", "è", "ê", "ë", "î", "Î", "ô", "œ", "û")

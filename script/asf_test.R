@@ -8,21 +8,33 @@
 # remove.packages("mapinsetr")
 # remove.packages("asf")
 # 
-# install_gitlab(repo = "atlas-social-de-la-france/asf",
-#                host = "gitlab.huma-num.fr",
-#                build_vignettes = TRUE,
-#                force = TRUE,
-#                upgrade = "never")        
+# remotes::install_gitlab(repo = "atlas-social-de-la-france/asf",
+#                         host = "gitlab.huma-num.fr",
+#                         build_vignettes = TRUE,
+#                         force = TRUE,
+#                         upgrade = "never")
 
 library(sf)
 library(asf)
 library(mapsf)
 
 
-mar <- asf_mar(md = "iris_xxxx", ma = "iris_r2", geom = TRUE)
+# Recuperation d'une table avec tous les iris qui ont un jour existe entre 1943 
+# et 2023 et pour chacun leur iris_r5
+mar <- asf_mar(md = "iris_xxxx", ma = "iris_r5", geom = TRUE)
 
+fond_iris_f <- mar$geom
 tabl <- mar$tabl
-geom <- mar$geom
+
+fond_iris_r5 <- asf_fond(fond_iris_f,
+                         tabl, 
+                         by = "IRISF_CODE", 
+                         maille = "IRISr5_CODE")
+
+mf_map(fond_iris_r5)
+
+
+
 
 geom <- asf_drom(geom, id = "IRISF_CODE")
 geom <- asf_fond(geom, tabl, 
