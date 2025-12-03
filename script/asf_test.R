@@ -18,242 +18,116 @@ library(sf)
 library(asf)
 library(mapsf)
 
+
+# Test asf_mar() --------------------------------------------------------------
+tabl <- asf_mar(md = "iris_xxxx", ma = "iris_f")
+tabl <- asf_mar(md = "iris_xxxx", ma = "iris_r2")
+tabl <- asf_mar(md = "iris_xxxx", ma = "iris_r5")
+tabl <- asf_mar(md = "iris_xxxx", ma = "com_f")
+tabl <- asf_mar(md = "iris_xxxx", ma = "com_r2")
+tabl <- asf_mar(md = "iris_xxxx", ma = "com_r5")
+
+tabl <- asf_mar(md = "iris_2023", ma = "iris_r2")
+tabl <- asf_mar(md = "iris_2023", ma = "iris_r5")
+tabl <- asf_mar(md = "iris_2023", ma = "com_f")
+tabl <- asf_mar(md = "iris_2023", ma = "com_r2")
+tabl <- asf_mar(md = "iris_2023", ma = "com_r5")
+
+tabl <- asf_mar(md = "com_xxxx", ma = "com_f")
+tabl <- asf_mar(md = "com_xxxx", ma = "com_r2")
+tabl <- asf_mar(md = "com_xxxx", ma = "com_r5")
+
+tabl <- asf_mar(md = "com_2023", ma = "com_r2")
+tabl <- asf_mar(md = "com_2023", ma = "com_r5")
+
+
+# Test utilisation du package -------------------------------------------------
 data <- read.csv("input/csp_2020.csv")
 geom <- asf_mar(geom = TRUE)
-tabl <- asf_mar(md = "iris_xxxx", ma = "iris_r2")
+tabl <- asf_mar(md = "iris_xxxx", ma = "com_r5")
 
-data_r2 <- asf_data(data, tabl, 
-                    by.x = "IRIS", by.y = "IRIS_CODE", 
-                    maille = "IRISrD_CODE", 
-                    vars = c(4:13), funs = "sum")
+data_r <- asf_data(data, tabl, 
+                   by.x = "IRIS", by.y = "IRIS_CODE", 
+                   maille = "COMr5_CODE", 
+                   vars = c(4:13), funs = "sum")
 
 sum(data$P20_POP)
-sum(data_r2$P20_POP)
+sum(data_r$P20_POP)
 
 geom <- asf_drom(geom)
 
-com_r2 <- asf_fond(geom, tabl, 
-                   by = "IRISF_CODE", 
-                   maille = "IRISrD_CODE")
+geom_r <- asf_fond(geom, tabl, 
+                   by = "COMF_CODE", 
+                   maille = "COMr5_CODE")
 
+mf_map(geom_r)
 
-mf_map(com_r2)
-
-
-z <- asf_zoom(com_r2, 
+z <- asf_zoom(geom_r, 
               places = c("Paris", "Avignon", "Bergerac", "Annecy"))
 
-zoom <- z$zooms
-label <- z$labels
-point <- z$points
+mf_map(z[[1]])
 
-com_r2_simply <- asf_simplify(com_r2)
+geom_r_simply <- asf_simplify(geom_r)
 
 
-fondata <- asf_fondata(com_r2_simply, 
-                       zoom, 
-                       data_r2, 
-                       by = "IRISrD_CODE")
+fondata <- asf_fondata(geom_r_simply, 
+                       z[[1]], 
+                       data_r, 
+                       by = "COMr5_CODE")
 
 
-fondata$pct_var <- fondata$C20_POP15P_CS6 / fondata$C20_POP15P * 100
+# Test carto stat -------------------------------------------------------------
+x <- fondata
 
-q6 <- quantile(fondata$pct_var, 
-               probs = c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1), 
-               na.rm = TRUE)
+x$pct_cs6 <- x$C20_POP15P_CS6 / x$C20_POP15P * 100
 
-pal <- asf_palette("seq")
+q6 <- c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1)
+b9 <- c(0, 0.1, 0.2, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9, 1)
+bd <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1)
 
+breaks <- q6
 
-mf_map(fondata, 
-       var = "pct_var", 
+b <- quantile(x$pct_cs6, probs = breaks, na.rm = TRUE)
+
+pal <- asf_palette("div", nb = length(b)-1)
+
+mf_map(x, 
+       var = "pct_cs6", 
        type = "choro", 
-       breaks = q6, 
+       breaks = b, 
        pal = pal, 
        border = NA)
 
-mf_map(point, 
-       col = "red", 
-       add = TRUE)
 
-mf_label(label, 
-         var = "label", 
-         cex = 0.8)
-
-
-
-
-
-
-data <- read.csv("input/csp_2020.csv")
-
-tabl <- asf_mar(md = "iris_xxxx", ma = "iris_r2", dir = "input/mar")
-
-tmp <- merge(data, tabl, by.x = "IRIS", by.y = "IRIS_CODE", all.x = TRUE)
-
-pal <- asf_palette(pal = "tulipe", nb = 8)
-asf_plot_typo(tmp,
-              vars = c(6:13),
-              typo = "TAAV2017", 
-              order.v = c(1:6, 8, 7), 
-              order.t = c("5", "1", "2", "3", "4", "0"),
-              pal = pal
-              )
-
-asf_plot_typo(tmp,
-              vars = c(6:13),
-              typo = c("TAAV2017", "CATEAAV2020"), 
-              order.t = c("30", "20", "13", "12", "11"),
-              pal = pal, 
-              eff = TRUE
-              )
-
-pal <- asf_palette(pal = "tulipe", nb = 6)
-asf_plot_vars(tmp,
-              vars = c(6:13),
-              typo = "TAAV2017", 
-              order.v = c(1:6, 8, 7),
-              order.t = c("5", "1", "2", "3", "4", "0"),
-              pal = pal
-              )
-
-pal <- asf_palette(pal = "tulipe", nb = 6)
-asf_plot_vars(tmp,
-              vars = c(6),
-              typo = "TAAV2017",
-              pal = pal
-              )
-
-
-
-
-#
-
-
-data <- data.frame(
-  com = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10"),
-  tav = c("1", "1", "1", "1", "2", "2", "2", "2", "3", NA),
-  cav = c("1", "1", "2", "2", "1", "1", "2", "2", "1", NA),
-  pop = c(50, 100, 150, 200, 250, 300, 350, 400, 450, 500),
-  m50 = c(20, 30, 50, 80, 130, 210, 220, 230, 450, 460),
-  p50 = c(30, 70, 100, 120, 120, 90, 130, 170, 0, 40),
-  cah = c("c2", "c1", "c2", "c1", "c2", "c2", "c1", "c2", "c1", NA)
-)
-
-palette <- asf_palette(type = "qua")
-
-
-
-
-
-
-asf_plot_typo(data, vars = "cah", typo = "tav", 
-              order.v = c(2, 1),
-              order.t = c(3, 1, 2)
-              )
-
-asf_plot_typo(data, vars = c("p50", "m50"), typo = "tav",
-              order.v = c(2, 1),
-              order.t = c(2, 3, 1)
-              )
-
-asf_plot_typo(data, vars = "cah", typo = c("tav", "cav"),
-              order.v = c(2, 1),
-              order.t = c(2, 3, 1)
-              )
-
-asf_plot_typo(data, vars = c("m50", "p50"), typo = c("tav", "cav"),
-              order.v = c(2, 1),
-              order.t = c(2, 3, 1)
-              )
-
-
-
-
-
-asf_plot_vars(data, vars = "cah", typo = "tav",
-              # order.v = c(2, 1),
-              order.t = c(2, 3, 1)
-              )
-
-asf_plot_vars(data, vars = "m50", typo = "tav",
-              )
-
-asf_plot_vars(data, vars = c("m50", "p50"), typo = "tav",
-              )
-
-asf_plot_vars(data, vars = "cah", typo = c("tav", "cav"),
-              )
-
-asf_plot_vars(data, vars = "m50", typo = c("tav", "cav"),
-              )
-
-asf_plot_vars(data, vars = c("m50", "p50"), typo = c("tav", "cav"),
-              )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-asf_plot_typo(data, vars = "cah", typo = "tav", pal = palette)
-asf_plot_typo(data, vars = c("m50", "p50"), typo = "tav", pal = palette)
-
-asf_plot_typo(data, vars = "cah", typo = c("tav", "cav"), pal = palette)
-asf_plot_typo(data, vars = c("m50", "p50"), typo = c("tav", "cav"), pal = palette)
-
-
-asf_plot_typo(data, vars = "cah", typo = "tav", pal = palette, eff = TRUE)
-asf_plot_typo(data, vars = c("m50", "p50"), typo = "tav", pal = palette, eff = TRUE)
-
-asf_plot_typo(data, vars = "cah", typo = c("tav", "cav"), pal = palette, eff = TRUE)
-asf_plot_typo(data, vars = c("m50", "p50"), typo = c("tav", "cav"), pal = palette, eff = TRUE)
-
-
-asf_plot_vars(data, vars = "cah", typo = "tav", pal = palette)
-asf_plot_vars(data, vars = "m50", typo = "tav", pal = palette)
-asf_plot_vars(data, vars = c("m50", "p50"), typo = "tav", pal = palette)
-
-asf_plot_vars(data, vars = "cah", typo = c("tav", "cav"), pal = palette)
-asf_plot_vars(data, vars = "m50", typo = c("tav", "cav"), pal = palette)
-asf_plot_vars(data, vars = c("m50", "p50"), typo = c("tav", "cav"), pal = palette)
-
-
-asf_plot_vars(data, vars = "cah", typo = "tav", pal = palette, eff = TRUE)
-asf_plot_vars(data, vars = "m50", typo = "tav", pal = palette, eff = TRUE)
-asf_plot_vars(data, vars = c("m50", "p50"), typo = "tav", pal = palette, eff = TRUE)
-
-asf_plot_vars(data, vars = "cah", typo = c("tav", "cav"), pal = palette, eff = TRUE)
-asf_plot_vars(data, vars = "m50", typo = c("tav", "cav"), pal = palette, eff = TRUE)
-asf_plot_vars(data, vars = c("m50", "p50"), typo = c("tav", "cav"), pal = palette, eff = TRUE)
-
-
-
-
-
-
-
+y <- fondata
+
+y$pct_cs5 <- y$C20_POP15P_CS5 / y$C20_POP15P * 100
+y$pct_cs3 <- y$C20_POP15P_CS3 / y$C20_POP15P * 100
+
+class3 <- function(x) {
+  cuts <- quantile(x, probs = c(1/3, 2/3), na.rm = TRUE)
+  cut(x,
+      breaks = c(-Inf, cuts, Inf),
+      labels = c("l", "m", "h"),
+      include.lowest = TRUE)
+}
+
+y$cs5_class <- class3(y$pct_cs5)
+y$cs3_class <- class3(y$pct_cs3)
+
+y$class <- paste0(y$cs5_class, y$cs3_class)
+
+palette <- c("ll" = "#e3e3e3","lm" = "#8ccaae","lh" = "#00a183",
+             "ml" = "#f28d65","mm" = "#a08a6e","mh" = "#00725c",
+             "hl" = "#dc0d15","hm" = "#981108","hh" = "#2e2d2d"
+             )
+
+mf_map(y, 
+       var = "class",
+       type = "typo",
+       val_order = c("ll","lm","lh","ml","mm","mh","hl","hm","hh"),
+       pal = palette,
+       border = NA)
 
 
 
