@@ -88,44 +88,6 @@ cat("\n=== INTERPRÉTATION DES AXES ===\n")
 dimdesc_result <- dimdesc(acp, axes = 1:3)
 print(dimdesc_result)
 
-# AXE 1 ----
-# Les corrélations sont fortes et organisées en deux groupes :
-# Variables fortement positives (Var11–Var15, Var6–Var10)
-# → corrélées entre elles, tirent l’axe dans le sens positif
-# Variables fortement négatives (Var1–Var5)
-# → tirent l’axe dans le sens négatif
-# 
-# Interprétation :
-# Dim 1 oppose un groupe de variables du type Var1 à Var5 contre un groupe Var6 à Var15
-# C’est l’opposition structurante des groupes simulés dans cet exemple :
-# – Groupe 1 : Var1–5 fortes ; Var6–10 faibles
-# – Groupe 3 : Var11–15 fortes
-#
-# Axe 1 = « Opposition Var1–5 vs Var6–15 »
-#
-#
-# AXE 2 ----
-# Les corrélations sont beaucoup plus faibles
-# Les variables les plus liées : Var11, Var15, Var13, Var14, Var12 (positives)
-# En face : Var6–Var10 (négatives)
-# 
-# Interprétation :
-# Dim 2 oppose certains sous-groupes au sein des blocs hauts de Var11–15 vs Var6–10
-# C’est une dimension secondaire : variations fines entre les groupes simulés
-# 
-# Axe 2 = « nuances à l’intérieur des blocs Var11–15 vs Var6–10 ».
-#
-#
-# AXE 3 ----
-# Variables positives : Var9, Var6, Var8
-# Variables négatives : Var10, Var7
-# 
-# Interprétation :
-# Dim 3 sépare surtout un sous-groupe parmi les variables Var6–Var10
-# C’est une dimension locale, interne au “bloc central”
-# 
-# Axe 3 = « variation interne du bloc Var6–Var10 »
-
 
 # --- 2.3 Analyse des individus ---
 
@@ -260,20 +222,7 @@ moyennes_classes <- aggregate(data_quant,
                               FUN = mean)
 print(moyennes_classes)
 
-# Test de V de Cramer pour variables qualitatives
-cat("\n=== ASSOCIATION CLASSES - VARIABLES QUALITATIVES ===\n")
-for(var_qual in names(data_qual)) {
-  table_cont <- table(classes_finales, data_qual[[var_qual]])
-  chi2_test <- chisq.test(table_cont)
-  cramer_v <- sqrt(chi2_test$statistic / (n * (min(dim(table_cont)) - 1)))
-  cat(var_qual, "- V de Cramer:", round(cramer_v, 3), 
-      "- p-value:", format.pval(chi2_test$p.value), "\n")
-}
 
-# Variable	    V de Cramer	    Interprétation
-# Region	      0.068	          Très faible association avec les clusters (proche de 0), p ≈ 0.59 → aucune relation significative
-# Categorie	    0.039	          Très faible association, p ≈ 0.82 → pas d’effet
-# Niveau	      0.048	          Très faible association, p ≈ 0.68 → pas d’effet
 
 
 
@@ -285,58 +234,56 @@ library(reshape2)
 
 plot(acp$ind$coord[,1], acp$ind$coord[,2], col = classes_finales,
      pch = 19, xlab = "Dim1", ylab = "Dim2", main = "Clusters sur plan PCA")
-legend("topright", legend = 1:3, col = 1:3, pch = 19)
+legend("topright", legend = 1:7, col = 1:7, pch = 19)
 
 
 
+d_prof <- cbind(data_quant, clust = classes_finales)
+
+# Moyennes et ecarts-types globaux 
+vars <- names(data_quant)
+
+moy_ens <- sapply(data_quant, mean)
+et_ens  <- sapply(data_quant, sd)
+
+
+# Moyennes par classe pour chaque variable
+classes <- sort(unique(classes_finales))
+res_list <- list()
+
+for (v in vars) {
+  mat <- tapply(d_prof[[v]], d_prof$clust, mean)
+  res_list[[v]] <- mat
+}
+
+profils <- do.call(rbind, lapply(vars, function(v) {
+  data.frame(
+    variable = v,
+    clust    = classes,
+    moy_clust = res_list[[v]][as.character(classes)],
+    moy_ens   = moy_ens[v],
+    et_ens    = et_ens[v],
+    row.names = NULL
+  )
+}))
+
+
+# Calcul de l'ecart a la moyenne
+profils$ecart_moyenne <- (profils$moy_clust - profils$moy_ens) / profils$et_ens
+
+
+# Graph
+ggplot(profils, aes(x = variable, y = ecart_moyenne, fill = factor(clust))) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  facet_wrap(~ clust, scales = "free_y") +
+  scale_fill_manual(values = c("#E7B800", "#00AFBB", "#FC4E07",
+                               "#7AD151", "#B33DC6", "#FF6F91", "#2E86C1")) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  labs(title = "Profils des classes",
+       x = "Variable", y = "Écart à la moyenne (en ET)")
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# ---------------------------------------------------------------------------
-# 4. AFC (Analyse Factorielle des Correspondances)
-# ---------------------------------------------------------------------------
-
-# AFC entre Region et Categorie
-table_contingence <- table(donnees$Region, donnees$Categorie)
-
-cat("\n=== TABLE DE CONTINGENCE ===\n")
-print(table_contingence)
-
-# Test d'indépendance du Chi²
-chi2_test <- chisq.test(table_contingence)
-cat("\nTest du Chi² - p-value:", chi2_test$p.value, "\n")
-
-# AFC
-afc <- CA(table_contingence, graph = FALSE)
-
-# Inertie
-cat("\n=== INERTIE AFC ===\n")
-print(afc$eig)
-
-# Visualisation
-fviz_ca_biplot(afc, repel = TRUE,
-               title = "AFC - Region vs Categorie",
-               col.row = "blue", col.col = "red")
-
-# Contributions
-cat("\n=== CONTRIBUTIONS LIGNES (Region) ===\n")
-print(afc$row$contrib)
-
-cat("\n=== CONTRIBUTIONS COLONNES (Categorie) ===\n")
-print(afc$col$contrib)
 

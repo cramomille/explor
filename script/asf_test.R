@@ -7,7 +7,7 @@
 # remove.packages("rmapshaper")
 # remove.packages("mapinsetr")
 # remove.packages("asf")
-# 
+#
 # remotes::install_gitlab(repo = "atlas-social-de-la-france/asf",
 #                         host = "gitlab.huma-num.fr",
 #                         build_vignettes = TRUE,
