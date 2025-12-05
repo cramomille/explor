@@ -92,7 +92,18 @@ y <- dput(x) # test de cette fonction
 test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
 
 
+# TABLEAU CROISE --------------------------------------------------------------
+# Creation d'un data.frame d'exemple
+set.seed(1)
 
+x <- data.frame(
+  csp  = sample(c("agriculteurice", "ouvriere", "cadre"), 20, replace = TRUE),
+  sexe = sample(c("homme", "femme"), 20, replace = TRUE),
+  poids = sample(1:5, 20, replace = TRUE)
+)
 
+t <- create_xtab(d, "csp", "sexe", "poids")
+
+u <- create_xtab(d, "csp", "sexe")
 
 
