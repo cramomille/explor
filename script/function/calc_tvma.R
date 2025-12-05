@@ -16,12 +16,12 @@ calc_tvma <- function(dataframes,
   
   # Verification que le nombre de data.frames correspond au nombre d'annees donnees
   if (length(dataframes) != length(annees)) {
-    stop("Le nombre de dataframes doit être égal au nombre d'années fournies.")
+    stop("Le nombre de dataframes doit etre egal au nombre d'annees fournies.")
   }
   
   # Verification que tous les data.frames contiennent la colonne identifiant specifiee
   if (!all(sapply(dataframes, function(df) id %in% colnames(df)))) {
-    stop("Tous les dataframes doivent contenir la colonne identifiant spécifiée.")
+    stop("Tous les dataframes doivent contenir la colonne identifiant spécifiee.")
   }
   
   # Initialisation du data.frame final avec la colonne identifiant du premier data.frame
