@@ -1,13 +1,23 @@
-#' @title 
+#' @title Creation d'un tableau croise
+#'
 #' @description
-#' 
-#' @param
-#' 
+#' Construit un tableau croise entre deux variables categorielles d'un 
+#' data.frame, eventuellement pondere, puis le retourne sous forme de data.frame 
+#' large. Les modalites manquantes (`NA`) sont conservees et renommees en 
+#' `"NA"`.
+#'
+#' @param d le data.frame contenant les variables a croiser
+#' @param var_row le nom de la variable utilisee pour les lignes du tableau
+#' @param var_col le nom de la variable utilisee pour les colonnes du tableau
+#' @param weight le nom de la variable de ponderation (si `NULL`, une 
+#' ponderation uniforme de 1 est utilisee pour chaque ligne)
+#'
 #' @return 
-#' 
-#' 
+#' La fonction renvoie un data.frame
+#'
 #' @examples
-#' 
+#' create_xtab(d, "csp", "nat")
+#' create_xtab(d, "csp", "nat", weight = "w")
 
 create_xtab <- function(d, 
                         var_row, 
@@ -34,6 +44,20 @@ create_xtab <- function(d,
   # Creation du tableau croise
   tab <- tapply(w, list(rowv, colv), sum, default = 0)
   
+  # Suppression eventuelle de la ligne "NA"
+  if ("NA" %in% rownames(tab)) {
+    if (all(tab["NA", ] == 0)) {
+      tab <- tab[rownames(tab) != "NA", , drop = FALSE]
+    }
+  }
+  
+  # Suppression eventuelle de la colonne "NA"
+  if ("NA" %in% colnames(tab)) {
+    if (all(tab[, "NA"] == 0)) {
+      tab <- tab[, colnames(tab) != "NA", drop = FALSE]
+    }
+  }
+  
   # Conversion en data.frame
   out <- as.data.frame.matrix(tab)
   
@@ -46,7 +70,7 @@ create_xtab <- function(d,
   rownames(out) <- NULL
   
   # Reorganisation du tableau
-  out <- out[, c(var_row, new_names)]
+  result <- out[, c(var_row, new_names)]
   
-  return(out)
+  return(result)
 }
