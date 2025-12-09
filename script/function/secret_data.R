@@ -23,8 +23,8 @@
 #' 25   64   15   32   24   84   53
 #' 25   64   NA   32   NA   84   53
 #' 
-#' @param data le tableau de donnees
-#' @param vars le vecteur avec l'indice des variables a traiter dans 'data'
+#' @param d le tableau de donnees
+#' @param vars le vecteur avec l'indice des variables a traiter dans 'd'
 #' @param limit la valeur de l'effectif minimum de la secretisation
 #' @param unique le boleen pour definir si l'on considere que l'ensemble des
 #' colonnes a secretiser forment ou non un tout ('TRUE'  si toutes les colonnes
@@ -34,12 +34,12 @@
 #' La fonction renvoie un data.frame
 #' 
 #' @examples
-#' secret_data(data = data, 
+#' secret_data(d = data, 
 #'             vars = c(2:6),
 #'             limit = 11,
 #'             unique = TRUE)
 
-secret_data <- function(data, 
+secret_data <- function(d, 
                         vars,
                         limit = 11,
                         unique = TRUE) {
@@ -77,8 +77,11 @@ secret_data <- function(data,
     return(values_secret)
   }
   
-  # Application de la secretisation ligne par ligne sur les colonnes specifiees
-  dataframe[vars] <- t(apply(dataframe[vars], 1, secret_row))
+  # Copie du data.frame pour creer l'objet final
+  result <- d
   
-  return(dataframe)
+  # Application de la secretisation ligne par ligne sur les colonnes specifiees
+  result[vars] <- t(apply(d[vars], 1, secret_row))
+  
+  return(result)
 }
