@@ -10,30 +10,30 @@
 #' 
 
 # Fonction pour calculer le TVMA entre deux data.frames identiques 
-calc_tvma <- function(dataframes, 
-                      annees, 
+calc_tvma <- function(d, 
+                      years, 
                       id) {
   
   # Verification que le nombre de data.frames correspond au nombre d'annees donnees
-  if (length(dataframes) != length(annees)) {
-    stop("Le nombre de dataframes doit etre egal au nombre d'annees fournies.")
+  if (length(d) != length(years)) {
+    stop("le nombre de tableaux de donnees doit etre egal au nombre d'annees fournies")
   }
   
   # Verification que tous les data.frames contiennent la colonne identifiant specifiee
-  if (!all(sapply(dataframes, function(df) id %in% colnames(df)))) {
-    stop("Tous les dataframes doivent contenir la colonne identifiant spécifiee.")
+  if (!all(sapply(d, function(df) id %in% colnames(df)))) {
+    stop("tous les tableaux de donnees doivent contenir la colonne identifiant specifiee")
   }
   
   # Initialisation du data.frame final avec la colonne identifiant du premier data.frame
-  result <- dataframes[[1]][, id, drop = FALSE]
+  result <- d[[1]][, id, drop = FALSE]
   
   # Parcour des paires consecutives de data.frames
-  for (i in seq_along(dataframes)[-length(dataframes)]) {
+  for (i in seq_along(d)[-length(d)]) {
     # Data.frames et annees courantes
-    df1 <- dataframes[[i]]
-    df2 <- dataframes[[i + 1]]
-    annee1 <- annees[i]
-    annee2 <- annees[i + 1]
+    df1 <- d[[i]]
+    df2 <- d[[i + 1]]
+    annee1 <- years[i]
+    annee2 <- years[i + 1]
     
     # Nombre d'annees entre les deux periodes
     nb_years <- annee2 - annee1
