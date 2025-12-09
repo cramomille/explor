@@ -1,6 +1,3 @@
-# ==============================================================================
-# EXEMPLE COMPLEXE : Analyse multivariee complete sur les CSP
-# ==============================================================================
 
 library(FactoMineR)
 library(factoextra)
@@ -9,14 +6,23 @@ library(gridExtra)
 library(cluster)
 library(corrplot)
 
-# ---------------------------------------------------------------------------
-# 1. LECTURE DES DONNEES
-# ---------------------------------------------------------------------------
+
+# 1 - DONNEES -----------------------------------------------------------------
 
 data <- read.csv("input/csp_2020.csv")
+
+# Test sur les effectifs
 data_quant <- data[, c(6:13)]
 
-# Explorations preliminaires
+# Test sur les pourcentages
+data_quant <- round(data[, c(6:13)] / data$C20_POP15P * 100, 3)
+data_quant[, 1:8][is.na(data_quant[, 1:8])] <- 0
+
+
+
+
+
+# Explorations preliminaires des donnees
 str(data)
 summary(data)
 
@@ -25,13 +31,11 @@ corrplot(cor(data_quant), method = "color", type = "upper",
          tl.cex = 0.7, title = "Matrice de correlations")
 
 
-# ---------------------------------------------------------------------------
-# 2. ACP
-# ---------------------------------------------------------------------------
+# 2 - ACP ---------------------------------------------------------------------
 
 acp <- PCA(data_quant, scale.unit = TRUE, ncp = 10, graph = FALSE)
 
-# --- 2.1 Analyse des valeurs propres ---
+## Analyse des valeurs propres ----
 cat("\n=== VALEURS PROPRES ===\n")
 eigenvalues <- acp$eig
 print(eigenvalues)
@@ -51,16 +55,16 @@ fviz_eig(acp, addlabels = TRUE, ncp = 10,
          main = "Scree plot", barfill = "#00AFBB")
 
 
-# --- 2.2 Analyse des variables ---
+## Analyse des variables ----
 
 # Cercle des corrélations (Dim 1-2)
 fviz_pca_var(acp, axes = c(1, 2), col.var = "contrib",
-             gradient.cols = c("blue", "yellow", "red"),
+             gradient.cols = c("blue", "green", "red"),
              repel = TRUE, title = "Variables - Dim 1-2")
 
 # Cercle des corrélations (Dim 3-4)
 fviz_pca_var(acp, axes = c(3, 4), col.var = "cos2",
-             gradient.cols = c("blue", "yellow", "red"),
+             gradient.cols = c("blue", "green", "red"),
              repel = TRUE, title = "Variables - Dim 3-4")
 
 # Contributions des variables
@@ -89,11 +93,11 @@ dimdesc_result <- dimdesc(acp, axes = 1:3)
 print(dimdesc_result)
 
 
-# --- 2.3 Analyse des individus ---
+## Analyse des individus ----
 
 # Projection avec coloration par contribution
 fviz_pca_ind(acp, col.ind = "contrib",
-             gradient.cols = c("blue", "yellow", "red"),
+             gradient.cols = c("blue", "green", "red"),
              repel = FALSE, alpha.ind = 0.5,
              title = "Individus colorés par contribution")
 
@@ -112,9 +116,8 @@ fviz_pca_biplot(acp,
                 repel = TRUE,
                 title = "Biplot ACP")
 
-# ---------------------------------------------------------------------------
-# 3. CAH SUR LES RÉSULTATS DE L'ACP
-# ---------------------------------------------------------------------------
+
+# 3 - CAH SUR LES RESULTATS DE L'ACP ------------------------------------------
 
 # CAH avec méthode de Ward sur les 5 premières composantes
 coords_acp <- acp$ind$coord[, 1:5]
@@ -179,37 +182,11 @@ fviz_cluster(list(data = coords_acp, cluster = classes_finales),
              # repel = TRUE,
              show.clust.cent = TRUE,
              ggtheme = theme_minimal(),
-             main = "Clustering (3 classes) sur ACP")
+             main = "Clustering sur ACP")
 
 # --- 3.3 Caractérisation des classes ---
 
 data$Classe <- as.factor(classes_finales)
-
-
-
-
-
-library(asf)
-library(mapsf)
-
-mar <- asf_mar(md = "iris_xxxx", ma = "iris_f", geom = TRUE)
-
-geom <- asf_drom(mar[[2]])
-
-z <- asf_zoom(geom, places = c("5", "4"))
-
-data <- asf_data(data, mar[[1]], by.x = "IRIS", by.y = "IRIS_CODE", maille = "IRISF_CODE", vars = 4, funs = "sum", keep = c("COM", "Classe"))
-
-fondata <- asf_fondata(geom, z[[1]], data, by = "IRISF_CODE")
-
-
-mf_map(fondata, 
-       var = "Classe", 
-       type = "typo", 
-       pal = c("#E7B800", "#00AFBB", "#FC4E07", "#7AD151", "#B33DC6", "#FF6F91", "#2E86C1"),
-       border = NA)
-
-
 
 
 
@@ -283,6 +260,43 @@ ggplot(profils, aes(x = variable, y = ecart_moyenne, fill = factor(clust))) +
   theme(legend.position = "none") +
   labs(title = "Profils des classes",
        x = "Variable", y = "Écart à la moyenne (en ET)")
+
+
+
+
+# 4 - CARTOGRAPHIE ------------------------------------------------------------
+
+library(asf)
+library(mapsf)
+
+mar <- asf_mar(md = "iris_xxxx", ma = "iris_f", geom = TRUE, dir = "input/mar/")
+
+geom <- asf_drom(mar[[2]])
+
+z <- asf_zoom(geom, places = c("5", "4"))
+
+data <- asf_data(data, mar[[1]], 
+                 by.x = "IRIS", by.y = "IRIS_CODE", 
+                 maille = "IRISF_CODE", 
+                 vars = 4, 
+                 funs = "sum", 
+                 keep = c("COM", "Classe"))
+
+fondata <- asf_fondata(geom, z[[1]], data, by = "IRISF_CODE")
+
+
+mf_map(fondata, 
+       var = "Classe", 
+       type = "typo", 
+       pal = c("#E7B800", "#00AFBB", "#FC4E07", "#7AD151", "#B33DC6", "#FF6F91", "#2E86C1"),
+       border = NA)
+
+
+
+
+
+
+
 
 
 
