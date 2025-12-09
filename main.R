@@ -10,13 +10,13 @@ invisible(sapply(list.files("script/function",
                  source))
 
 library(sf)
-library(mapsf)
 library(asf)
+library(mapsf)
 
 
 # CREATION DE FICHIERS .PARQUET -----------------------------------------------
 # Creation de fichiers de donnees test
-set.seed(123)
+set.seed(1312)
 n <- 1e6
 
 df <- data.frame(
@@ -89,12 +89,12 @@ x <- data.frame(
 
 y <- dput(x) # test de cette fonction
 
-test <- secret_data(x, cols = c(3:6), limit = 11, unique = FALSE)
+result <- secret_data(x, vars = c(3:6), limit = 11, unique = FALSE)
 
 
 # TABLEAU CROISE --------------------------------------------------------------
 # Creation d'un data.frame d'exemple
-set.seed(1)
+set.seed(1312)
 
 x <- data.frame(
   csp  = sample(c("agriculteurice", "ouvriere", "cadre"), 20, replace = TRUE),
@@ -102,8 +102,7 @@ x <- data.frame(
   poids = sample(1:5, 20, replace = TRUE)
 )
 
-t <- create_xtab(d, "csp", "sexe", "poids")
-
-u <- create_xtab(d, "csp", "sexe")
+result <- create_xtab(x, "csp", "sexe", "poids")
+result <- create_xtab(x, "csp", "sexe")
 
 
