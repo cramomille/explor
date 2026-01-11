@@ -105,4 +105,13 @@ x <- data.frame(
 result <- create_xtab(x, "csp", "sexe", "poids")
 result <- create_xtab(x, "csp", "sexe")
 
+# Selection des colonnes numeriques
+num_cols <- colnames(result)[-1]
 
+# % lignes
+tab_pct_row <- result
+tab_pct_row[num_cols] <- t(apply(result[num_cols], 1, function(x) round(100 * x / sum(x), 2)))
+
+# % colonnes
+tab_pct_col <- result
+tab_pct_col[num_cols] <- apply(result[num_cols], 2, function(x) round(100 * x / sum(x), 2))
