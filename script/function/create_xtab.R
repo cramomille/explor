@@ -2,9 +2,7 @@
 #'
 #' @description
 #' Construit un tableau croise entre deux variables categorielles d'un 
-#' data.frame, eventuellement pondere, puis le retourne sous forme de data.frame 
-#' large. Les modalites manquantes (`NA`) sont conservees et renommees en 
-#' `"NA"`.
+#' data.frame, eventuellement pondere
 #'
 #' @param d le data.frame contenant les variables a croiser
 #' @param var_row le nom de la variable utilisee pour les lignes du tableau
