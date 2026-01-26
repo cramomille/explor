@@ -6,7 +6,6 @@
 
 # remove.packages("rmapshaper")
 # remove.packages("mapinsetr")
-# remove.packages("asf")
 #
 # remotes::install_gitlab(repo = "atlas-social-de-la-france/asf",
 #                         host = "gitlab.huma-num.fr",
@@ -17,6 +16,35 @@
 library(sf)
 library(asf)
 library(mapsf)
+
+mar <- asf_mar(md = "iris_xxxx", ma = "iris_r2", geom = TRUE, dir = "input/mar/")
+
+tabl <- mar$tabl
+geom <- mar$geom
+
+fond <- asf_drom(geom)
+
+mf_map(fond, border = NA)
+
+z <- asf_zoom(f = geom, 
+              places = c("5", "4"),
+              # epsg = c("2" = "5490"),
+              r = 15000,
+              nb_cols = 5,
+              f_ref = fond
+              )
+
+carte <- rbind(fond, z[[1]])
+mf_map(carte)
+mf_map(z[[3]], col = "red", add = TRUE)
+mf_label(z[[2]], var = "label")
+
+
+
+
+
+
+
 
 
 # Test asf_mar() --------------------------------------------------------------
