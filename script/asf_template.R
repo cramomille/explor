@@ -250,3 +250,23 @@ mf_label(pts_4, var = "lab", col = "red", pos = 4)
 mf_label(pts_3, var = "lab", col = "orange", pos = 4)
 mf_label(pts_2, var = "lab", col = "pink", pos = 4)
 
+
+
+
+
+
+
+
+# POPSU
+mar <- asf_mar(md = "iris_xxxx", ma = "iris_f", geom = TRUE, dir = "input/mar")
+
+tabl <- mar$tabl
+geom <- mar$geom
+
+geom <- asf_drom(geom)
+geom <- asf_simplify(geom, keep = 0.1)
+mf_map(geom)
+
+epci <- asf_fond(geom, tabl, by = "IRISF_CODE", maille = "EPCI")
+
+mf_map(epci)
