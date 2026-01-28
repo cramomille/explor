@@ -1,3 +1,4 @@
+
 library(sf)
 library(asf)
 library(mapsf)
@@ -257,16 +258,54 @@ mf_label(pts_2, var = "lab", col = "pink", pos = 4)
 
 
 
-# POPSU
+# POPSU ----
 mar <- asf_mar(md = "iris_xxxx", ma = "iris_f", geom = TRUE, dir = "input/mar")
 
 tabl <- mar$tabl
 geom <- mar$geom
 
 geom <- asf_drom(geom)
-geom <- asf_simplify(geom, keep = 0.1)
-mf_map(geom)
+geom <- asf_simplify(geom, keep = 0.05)
 
 epci <- asf_fond(geom, tabl, by = "IRISF_CODE", maille = "EPCI")
 
+
+p <- c("Lille", "Nancy", "Epinal", "Bourges", "Chateauroux", 
+       "Le Mans", "Rennes", "Nantes", "Brest", "Caen", 
+       "Rouen", "Paris", "Dijon", "Bordeaux", "Clermont-Ferrand", 
+       "Grenoble", "Toulouse", "Pau"
+       )
+
+c <- c(2.337, 50.908,  # Dunkerque
+       6.086, 49.220,  # Thionville-Metz
+       7.698, 48.592,  # Strasbourg
+       0.579, 47.380,  # Tours
+       4.887, 45.797,  # Lyon
+       4.314, 45.451,  # Saint-Etienne
+       7.126, 43.822,  # Nice
+       5.471, 43.385,  # Marseille
+       -1.328, 43.411  # Bayonne
+       )
+
+l <- c("Dunkerque", 
+       "Thionville-Metz", 
+       "Strasbourg", 
+       "Tours", 
+       "Lyon", 
+       "Saint-Etienne",
+       "Nice", 
+       "Marseille", 
+       "Bayonne")
+
+
+z <- asf_zoom(epci, 
+              places = p,
+              coords = c,
+              labels = l, 
+              r = 30000)
+
+
 mf_map(epci)
+mf_map(z[[1]])
+mf_label(z[[2]], var = "label")
+
