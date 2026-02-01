@@ -195,51 +195,41 @@ p_coords <- data.frame(
   lat = as.numeric(p_data[seq(4, length(p_data), by = 4)])
 )
 
-
-
 pts <- st_as_sf(
   p_coords,
   coords = c("lon", "lat"),
   crs = 4326
 )
 
-pts <- asf_drom(pts)
+
+geom <- asf_mar(geom = TRUE, dir = "input/mar/")
+geom <- asf_drom(geom)
+geom$DEP <- substr(geom$IRISF_CODE, 1, 2)
+
+mf_map(geom)
+
+pts <- asf_drom(pts, f_ref = geom)
 
 pts_5 <- pts[pts$aav == "5", ]
 pts_4 <- pts[pts$aav == "4", ]
 pts_3 <- pts[pts$aav == "3", ]
 pts_2 <- pts[pts$aav == "2", ]
 
-
-
-
-
-geom <- asf_mar(geom = TRUE, dir = "input/mar/")
-geom <- asf_drom(geom)
-geom$DEP <- substr(geom$IRISF_CODE, 1, 2)
+mf_map(pts)
 
 geom_simply <- asf_simplify(geom, keep = 0.8)
-
 geom_simply <- asf_fond(geom_simply, maille = "COMF_CODE")
 
-
-
 dep <- asf_borders(geom, by = "DEP", keep = 0.05)
-
 
 monde <- st_read("input/monde_1M.gpkg")
 monde <- monde[monde$CNTR_ID %in% c("FR", "UK", "BE", "DE", "CH", "IT", "ES", "LU", "AD", "MC", "JE", "GG"), ]
 monde <- st_transform(monde, 2154)
 monde <- asf_simplify(monde, keep = 0.2)
 
-
-
 mf_map(geom_simply, border = NA)
 mf_map(dep, col = "#fff", add = TRUE)
-
 mf_map(monde, col = NA, add = TRUE)
-
-
 
 mf_map(pts_5, var = "lab", col = "black", add = TRUE)
 mf_map(pts_4, var = "lab", col = "red", add = TRUE)
