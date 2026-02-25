@@ -17,6 +17,11 @@ library(sf)
 library(asf)
 library(mapsf)
 
+# library(svglite)
+# ?svglite
+# 
+# mf_svg()
+
 # Test asf_mar() --------------------------------------------------------------
 tabl <- asf_mar(md = "iris_xxxx", ma = "iris_f")
 tabl <- asf_mar(md = "iris_xxxx", ma = "iris_r2")
@@ -115,9 +120,9 @@ y$cs3_class <- class3(y$pct_cs3)
 
 y$class <- paste0(y$cs5_class, y$cs3_class)
 
-palette <- c("ll" = "#e3e3e3","lm" = "#8ccaae","lh" = "#00a183",
-             "ml" = "#f28d65","mm" = "#a08a6e","mh" = "#00725c",
-             "hl" = "#dc0d15","hm" = "#981108","hh" = "#2e2d2d"
+palette <- c("ll" = "#e3e3e3", "lm" = "#8ccaae", "lh" = "#00a183",
+             "ml" = "#f28d65", "mm" = "#a08a6e", "mh" = "#00725c",
+             "hl" = "#dc0d15", "hm" = "#981108", "hh" = "#2e2d2d"
              )
 
 mf_map(y, 
