@@ -10,8 +10,25 @@ invisible(sapply(list.files("script/faraway/function/",
                  source))
 
 
-###############################################################################
-#################################################### ENREGISTREMENT DES PARTIES
+# EXPLORATIONS ----------------------------------------------------------------
+rank_games(dir = "script/faraway/games_results/")
+rank_games(dir = "script/faraway/games_results/", n = 10)
+
+rank_games(dir = "script/faraway/games_results/", n = 10, j = "rose")
+rank_games(dir = "script/faraway/games_results/", n = 10, j = "antoine")
+
+analyze_cards(dir = "script/faraway/games_results/")
+analyze_cards(dir = "script/faraway/games_results/", n = 10)
+
+analyze_cards(dir = "script/faraway/games_results/", j = "rose")
+analyze_cards(dir = "script/faraway/games_results/", n = 10, j = "rose")
+
+analyze_cards(dir = "script/faraway/games_results/", j = "antoine") 
+analyze_cards(dir = "script/faraway/games_results/", n = 10, j = "antoine") 
+
+
+
+# ENREGISTREMENT DES PARTIES --------------------------------------------------
 # save_game(
 # list(
 #   c("antoine", 0, 0, 9, 0, 2, 0, 24, 19, 7),
@@ -262,17 +279,3 @@ invisible(sapply(list.files("script/faraway/function/",
 #   c("rose", 18, 0, 6, 2, 6, 0, 0, 8, 6)
 # )
 # )
-
-
-###############################################################################
-################################################################## EXPLORATIONS
-
-rank_games(dir = "script/faraway/games_results/")
-rank_games(dir = "script/faraway/games_results/", j = "rose")
-rank_games(dir = "script/faraway/games_results/", n = 10, j = "rose")
-rank_games(dir = "script/faraway/games_results/", j = "antoine")
-
-analyze_cards(dir = "script/faraway/games_results/")
-analyze_cards(dir = "script/faraway/games_results/", n = 10)
-analyze_cards(dir = "script/faraway/games_results/", n = 10, j = "rose")
-analyze_cards(dir = "script/faraway/games_results/", n = 10, j = "antoine")  
