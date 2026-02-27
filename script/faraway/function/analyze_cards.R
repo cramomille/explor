@@ -9,8 +9,10 @@
 #'
 #' @return 
 #' La fonction affiche :
-#'   - mean_scores : scores moyens par carte sur les 'n' meilleures parties
-#'   - best_scores : meilleurs scores par carte sur les 'n' meilleures parties
+#'   - mean   : score moyen pour la carte
+#'   - median : score median pour la carte
+#'   - min    : score minimal pour la carte
+#'   - max    : score maximal pour la carte
 #'   
 #'@examples
 #'
@@ -50,22 +52,50 @@ analyze_cards <- function(dir = "games_results",
     top_df <- top_df[seq_len(n), ]
   }
   
-  # Definition du score moyen par carte (sur les parties retenues)
-  mean_scores <- colMeans(top_df[, cartes, drop = FALSE])
-  
-  # Definition du meilleur score par carte (sur les parties retenues)
-  best_scores <- apply(top_df[, cartes, drop = FALSE], 2, max)
+  # Calcul des statistiques par carte
+  mean <- colMeans(top_df[, cartes, drop = FALSE])
+  median <- apply(top_df[, cartes, drop = FALSE], 2, median)
+  min <- apply(top_df[, cartes, drop = FALSE], 2, min)
+  max <- apply(top_df[, cartes, drop = FALSE], 2, max)
   
   # Construction du tableau de resultat
   result <- data.frame(
-    card = names(mean_scores),
-    mean = round(mean_scores, 0),
-    best = round(best_scores, 0),
+    card   = names(mean),
+    mean   = round(mean, 0),
+    median = round(median, 0),
+    min    = round(min, 0),
+    max    = round(max, 0),
     row.names = NULL
   )
   
   # Affichage
   print(result, row.names = FALSE)
+  
+  # GRAPHIQUE -----------------------------------------------------------------
+  # Construction du titre en fonction des filtres
+  titre <- "Scores par carte"
+  filtres <- c()
+  if (!is.null(j)) filtres <- c(filtres, j)
+  if (!is.null(n) && is.finite(n)) filtres <- c(filtres, paste0("top ", n))
+  if (length(filtres) > 0) titre <- paste(titre, "(", paste(filtres, collapse = ", "), ")")
+  
+  x <- 1:9
+  cols <- c("mean" = "#ea5153", "median" = "#8292ca", "min" = "#fdc543", "max" = "#5cb885")
+  
+  # Creation du graphique
+  plot(x, result$mean, type = "n", ylim = c(0, 25),
+       xaxt = "n", xlab = "Carte", ylab = "Score",
+       main = titre)
+  axis(1, at = x, labels = result$card, las = 2)
+  
+  # Creation des courbes
+  lines(x, result$mean, type = "b", col = cols["mean"], lwd = 2, pch = 16)
+  lines(x, result$median, type = "b", col = cols["median"], lwd = 2, pch = 17)
+  lines(x, result$min, type = "b", col = cols["min"], lwd = 2, pch = 15)
+  lines(x, result$max, type = "b", col = cols["max"], lwd = 2, pch = 18)
+  
+  # Ajout de la legende
+  legend("topleft", legend = names(cols), col = cols, lty = 1, lwd = 2, pch = 16)
   
   invisible(result)
 }
