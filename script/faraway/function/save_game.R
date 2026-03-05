@@ -1,4 +1,4 @@
-#' @title Enregistrement des scores des joueuses lors d'une partie de Faraway
+#' @title Enregistrement des scores d'une partie de Faraway
 #'
 #' @param scores une liste de vecteurs (entre 2 et 6) :
 #'   - premier element : une chaine de caracteres correspondant au nom de la 
@@ -47,10 +47,10 @@ save_game <- function(scores,
       stop("les 9 scores de la joueuse ", v[1], " doivent etre numeriques")
     }
     if (any(vals < 0)) {
-      stop("Les 9 scores de la joueuse ", v[1], " doivent etre positifs ou nuls")
+      stop("les 9 scores de la joueuse ", v[1], " doivent etre positifs ou nuls")
     }
     if (any(vals %% 1 != 0)) {
-      stop("Les 9 scores de la joueuse ", v[1], " doivent etre des entiers")
+      stop("les 9 scores de la joueuse ", v[1], " doivent etre des entiers")
     }
   }
   
