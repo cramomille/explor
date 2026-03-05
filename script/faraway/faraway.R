@@ -1,5 +1,5 @@
 
-#                           EXPLORATION DES RESULTATS DE NOS PARTIES DE FARAWAY
+#                              EXPLORATION DES RESULTATS DES PARTIES DE FARAWAY
 #
 #                                                                antoine beroud
 #                                                                     aout 2025
