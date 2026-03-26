@@ -131,8 +131,3 @@ mf_map(y,
        val_order = c("ll","lm","lh","ml","mm","mh","hl","hm","hh"),
        pal = palette,
        border = NA)
-
-
-
-
-

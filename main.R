@@ -14,7 +14,6 @@ library(asf)
 library(mapsf)
 
 
-
 # CREATION DE FICHIERS .PARQUET -----------------------------------------------
 # Creation de fichiers de donnees test
 set.seed(1312)
