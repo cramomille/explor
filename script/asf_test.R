@@ -131,3 +131,26 @@ mf_map(y,
        val_order = c("ll","lm","lh","ml","mm","mh","hl","hm","hh"),
        pal = palette,
        border = NA)
+
+
+# Calcul de la superficie des AAV ---------------------------------------------
+mar <- asf_mar(md = "iris_xxxx", ma = "iris_f", geom = TRUE)
+
+tabl <- mar$tabl
+geom <- mar$geom
+
+fond <- merge(geom[, c(1:2)], tabl[, c(2, 15, 17)], all.x = TRUE)
+
+fond$area <- as.numeric(st_area(fond))
+
+# Somme des surfaces par AAV
+surf_aav <- tapply(fond$area, fond$TAAV2017, sum)
+
+surf_tot <- sum(fond$area)
+
+pct_aav <- (surf_aav / surf_tot) * 100
+
+resultat <- data.frame(
+  aav = names(pct_aav),
+  pct = as.numeric(pct_aav)
+)
