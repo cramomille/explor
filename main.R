@@ -119,12 +119,12 @@ result <- secret_data(
 # TABLEAU CROISE --------------------------------------------------------------
 x <- data.frame(
   csp  = sample(c("agriculteurice", "ouvriere", "cadre"), 20, replace = TRUE),
-  sexe = sample(c("homme", "femme"), 20, replace = TRUE),
+  genre = sample(c("homme", "femme"), 20, replace = TRUE),
   poids = sample(1:5, 20, replace = TRUE)
 )
 
-result <- create_xtab(x, "csp", "sexe", "poids")
-result <- create_xtab(x, "csp", "sexe")
+result <- create_xtab(x, "csp", "genre", "poids")
+result <- create_xtab(x, "csp", "genre")
 
 # Selection des colonnes numeriques
 num_cols <- colnames(result)[-1]
@@ -136,6 +136,59 @@ tab_pct_row[num_cols] <- t(apply(result[num_cols], 1, function(x) round(100 * x 
 # % colonnes
 tab_pct_col <- result
 tab_pct_col[num_cols] <- apply(result[num_cols], 2, function(x) round(100 * x / sum(x), 2))
+
+
+
+# INDEXATION ------------------------------------------------------------------
+set.seed(1312)
+
+n <- 1e7
+
+df_iris <- data.frame(
+  iris_code = sprintf("%08d", 1:n),
+  com_code = sample(sprintf("%05d", 1:30000), n, replace = TRUE),
+  valeur = runif(n)
+)
+
+df_com <- data.frame(
+  com_code = sprintf("%05d", 1:30000),
+  com_nom = paste0("commune_", 1:30000)
+)
+
+
+# Test duckdb
+library(duckdb)
+
+con <- dbConnect(duckdb::duckdb())
+
+dbWriteTable(con, "iris", df_iris, overwrite = TRUE)
+dbWriteTable(con, "com", df_com, overwrite = TRUE)
+
+dbExecute(con, "CREATE INDEX idx_iris_com_code ON iris(com_code);")
+dbExecute(con, "CREATE INDEX idx_com_com_code ON com(com_code);")
+
+system.time({
+  res_db <- dbGetQuery(con, "
+    SELECT *
+    FROM iris AS i
+    JOIN com AS c
+      ON i.com_code = c.com_code
+  ")
+})
+
+
+# Test DT
+library(data.table)
+
+dt_iris <- as.data.table(df_iris)
+dt_com <- as.data.table(df_com)
+
+setkey(dt_iris, com_code)
+setkey(dt_com, com_code)
+
+system.time({
+  res <- dt_com[dt_iris, on = "com_code"] 
+})
 
 
 
@@ -218,8 +271,6 @@ tab_pct_col[num_cols] <- apply(result[num_cols], 2, function(x) round(100 * x / 
 #   return(res)
 # }
 # 
-# 
-# 
 # export_tabs_csv <- function(tabs, 
 #                             dir_out = "output") {
 #   
@@ -249,9 +300,6 @@ tab_pct_col[num_cols] <- apply(result[num_cols], 2, function(x) round(100 * x / 
 #     write.csv(tab, file = file_out, row.names = FALSE)
 #   })
 # }
-# 
-# 
-# 
 # 
 # 
 # tabs <- tab_flux(
