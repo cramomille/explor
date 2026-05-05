@@ -72,12 +72,21 @@ rank_games <- function(dir = "games_results",
   min_s <- min(scores)
   max_s <- max(scores)
   
-  h <- hist(scores)
+  b <- 5
+  
+  breaks <- seq(
+    floor(min_s / b) * b,
+    ceiling(max_s / b) * b,
+    by = b
+  )
+  
+  h <- hist(scores, breaks = breaks, plot = FALSE)
   
   # Conversion des densites en %
-  h$counts <- h$density * 100 * diff(h$breaks)[1]
+  h$counts <- h$counts / length(scores) * 100
+  
   plot(h,
-       ylim = c(0, 40),
+       ylim = c(0, 20),
        col = "#8f96cb", 
        border = "#111",
        main = sprintf("Distribution des scores (min = %d, max = %d)", min_s, max_s),
