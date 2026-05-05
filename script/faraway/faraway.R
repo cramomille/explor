@@ -16,16 +16,19 @@ rank_games(dir = "script/faraway/games_results/", n = 10)
 
 rank_games(dir = "script/faraway/games_results/", n = 10, j = "rose")
 rank_games(dir = "script/faraway/games_results/", n = 10, j = "antoine")
+rank_games(dir = "script/faraway/games_results/", n = 10, j = "franck")
+rank_games(dir = "script/faraway/games_results/", n = 10, j = "emilie")
 
 analyze_cards(dir = "script/faraway/games_results/")
-analyze_cards(dir = "script/faraway/games_results/", n = 10)
+analyze_cards(dir = "script/faraway/games_results/", n = 50)
 
 analyze_cards(dir = "script/faraway/games_results/", j = "rose")
-analyze_cards(dir = "script/faraway/games_results/", n = 10, j = "rose")
-
 analyze_cards(dir = "script/faraway/games_results/", j = "antoine") 
+
+analyze_cards(dir = "script/faraway/games_results/", n = 10, j = "rose")
 analyze_cards(dir = "script/faraway/games_results/", n = 10, j = "antoine") 
 
+analyze_games(dir = "script/faraway/games_results/", rang = c(50,100))
 
 
 # ENREGISTREMENT DES PARTIES --------------------------------------------------
@@ -38,14 +41,14 @@ analyze_cards(dir = "script/faraway/games_results/", n = 10, j = "antoine")
 # )
 # save_game(
 # list(
-#   c("gabriel", 0, 0, 6, 7, 6, 2, 20, 14, 11), 
+#   c("gabriel", 0, 0, 6, 7, 6, 2, 20, 14, 11),
 #   c("alain", 0, 16, 4, 0, 12, 3, 4, 5, 16),
 #   c("franck", 0, 9, 4, 0, 12, 12, 15, 15, 5)
 # )
 # )
 # save_game(
 # list(
-#   c("rose", 2, 0, 9, 6, 3, 0, 4, 14, 7), 
+#   c("rose", 2, 0, 9, 6, 3, 0, 4, 14, 7),
 #   c("antoine", 4, 10, 8, 0, 18, 12, 10, 6, 14)
 # )
 # )
@@ -87,7 +90,7 @@ analyze_cards(dir = "script/faraway/games_results/", n = 10, j = "antoine")
 # )
 # save_game(
 # list(
-#   c("baltazar", 19, 6, 0, 16, 12, 12, 9, 7, 21), 
+#   c("baltazar", 19, 6, 0, 16, 12, 12, 9, 7, 21),
 #   c("gabriel", 6, 2, 4, 10, 6, 6, 18, 9, 14),
 #   c("franck", 2, 10, 9, 7, 0, 10, 13, 10, 11),
 #   c("rose", 1, 0, 20, 14, 21, 8, 6, 4, 18)
@@ -95,7 +98,7 @@ analyze_cards(dir = "script/faraway/games_results/", n = 10, j = "antoine")
 # )
 # save_game(
 # list(
-#   c("valentine", 0, 18, 0, 0, 6, 9, 4, 0, 18), 
+#   c("valentine", 0, 18, 0, 0, 6, 9, 4, 0, 18),
 #   c("rose", 3, 0, 0, 0, 5, 2, 6, 20, 0)
 # )
 # )
@@ -109,7 +112,7 @@ analyze_cards(dir = "script/faraway/games_results/", n = 10, j = "antoine")
 # )
 # save_game(
 # list(
-#   c("antoine", 12, 0, 4, 6, 20, 8, 0, 18, 12), 
+#   c("antoine", 12, 0, 4, 6, 20, 8, 0, 18, 12),
 #   c("rose", 0, 5, 0, 8, 6, 10, 6, 0, 12)
 # )
 # )
@@ -135,7 +138,7 @@ analyze_cards(dir = "script/faraway/games_results/", n = 10, j = "antoine")
 # )
 # save_game(
 # list(
-#   c("antoine", 0, 9, 6, 9, 9, 3, 8, 5, 12), 
+#   c("antoine", 0, 9, 6, 9, 9, 3, 8, 5, 12),
 #   c("rose", 0, 12, 8, 9, 10, 0, 0, 20, 10)
 # )
 # )
@@ -148,8 +151,8 @@ analyze_cards(dir = "script/faraway/games_results/", n = 10, j = "antoine")
 # save_game(
 # list(
 #   c("antoine", 0, 5, 3, 0, 0, 18, 16, 12, 12),
-#   c("valentine", 0, 0, 8, 10, 10, 0, 0, 20, 3), 
-#   c("eve", 0, 3, 4, 6, 0, 19, 0, 12, 13), 
+#   c("valentine", 0, 0, 8, 10, 10, 0, 0, 20, 3),
+#   c("eve", 0, 3, 4, 6, 0, 19, 0, 12, 13),
 #   c("rose", 0, 2, 6, 6, 0, 10, 17, 14, 7)
 # )
 # )
@@ -193,7 +196,7 @@ analyze_cards(dir = "script/faraway/games_results/", n = 10, j = "antoine")
 # )
 # save_game(
 # list(
-#   c("franck", 3, 0, 0, 0, 0, 8, 20, 8, 8), 
+#   c("franck", 3, 0, 0, 0, 0, 8, 20, 8, 8),
 #   c("mateo", 0, 2, 0, 2, 0, 12, 14, 24, 4),
 #   c("rose", 18, 6, 4, 19, 15, 6, 8, 4, 21),
 #   c("antoine", 0, 0, 9, 6, 7, 6, 17, 16, 19)
@@ -260,7 +263,7 @@ analyze_cards(dir = "script/faraway/games_results/", n = 10, j = "antoine")
 # save_game(
 # list(
 #   c("franck", 0, 0, 4, 0, 17, 21, 15, 21, 6),
-#   c("rose", 2, 0, 7, 16, 4, 12, 10, 8, 8), 
+#   c("rose", 2, 0, 7, 16, 4, 12, 10, 8, 8),
 #   c("antoine", 6, 9, 6, 6, 18, 14, 3, 16, 22)
 # )
 # )
@@ -278,4 +281,118 @@ analyze_cards(dir = "script/faraway/games_results/", n = 10, j = "antoine")
 #   c("antoine", 9, 3, 5, 6, 0, 14, 8, 2, 20),
 #   c("rose", 18, 0, 6, 2, 6, 0, 0, 8, 6)
 # )
+# )
+# save_game(
+#   list(
+#     c("rose", 0, 3, 0, 12, 0, 12, 20, 4, 16),
+#     c("mateo", 17, 13, 7, 15, 0, 20, 9, 10, 9),
+#     c("antoine", 6, 0, 16, 8, 4, 0, 20, 0, 14)
+#   )
+# )
+# save_game(
+#   list(
+#     c("mateo", 0, 0, 3, 8, 7, 24, 6, 16, 4),
+#     c("antoine", 0, 0, 19, 0, 14, 12, 12, 0, 14),
+#     c("rose", 0, 8, 0, 15, 20, 2, 18, 18, 4)
+#   )
+# )
+# 
+# # EXTENSIONS ----------------------------------------------------------------- 
+# save_game(
+# list(
+#   c("franck", 2, 0, 0, 0, 12, 20, 14, 12, 15),
+#   c("rose", 0, 0, 6, 0, 0, 0, 4, 20, 19)
+# )
+# )
+# save_game(
+#   list(
+#     c("franck", 0, 4, 2, 0, 0, 0, 13, 0, 13),
+#     c("rose", 0, 20, 6, 7, 3, 28, 6, 10, 18)
+#   )
+# )
+# save_game(
+#   list(
+#     c("rose", 13, 6, 0, 0, 18, 18, 12, 7, 15),
+#     c("antoine", 9, 8, 6, 14, 28, 12, 6, 0, 17)
+#   )
+# )
+# save_game(
+#   list(
+#     c("rose", 0, 0, 0, 0, 0, 12, 0, 10, 17),
+#     c("emilie", 9, 0, 0, 0, 7, 0, 18, 0, 10),
+#     c("antoine", 0, 9, 20, 10, 8, 24, 4, 3, 8)
+#   )
+# )
+# save_game(
+#   list(
+#     c("rose", 9, 14, 9, 7, 12, 10, 21, 10, 12),
+#     c("emilie", 0, 0, 14, 12, 6, 9, 0, 0, 26),
+#     c("antoine", 0, 0, 0, 6, 12, 0, 21, 17, 20)
+#   )
+# )
+# save_game(
+#   list(
+#     c("rose", 14, 18, 15, 20, 9, 7, 6, 3, 12),
+#     c("antoine", 4, 4, 0, 4, 12, 10, 8, 12, 24)
+#   )
+# )
+# save_game(
+#   list(
+#     c("antoine", 0, 6, 13, 12, 0, 0, 20, 0, 11),
+#     c("emilie", 16, 0, 15, 18, 21, 2, 0, 5, 2),
+#     c("rose", 5, 12, 18, 0, 20, 14, 9, 3, 13)
+#   )
+# )
+# save_game(
+#   list(
+#     c("antoine", 12, 5, 4, 0, 0, 4, 17, 4, 26),
+#     c("emilie", 20, 5, 0, 8, 0, 0, 6, 10, 14),
+#     c("rose", 9, 3, 7, 8, 6, 6, 14, 18, 17)
+#   )
+# )
+# save_game(
+#   list(
+#     c("antoine", 12, 3, 0, 0, 4, 14, 19, 16, 12),
+#     c("emilie", 6, 6, 0, 16, 3, 4, 0, 18, 15),
+#     c("rose", 14, 0, 17, 6, 10, 10, 10, 10, 6)
+#   )
+# )
+# save_game(
+#   list(
+#     c("emilie", 0, 4, 12, 5, 0, 7, 3, 13, 12),
+#     c("antoine", 19, 10, 0, 2, 4, 15, 0, 4, 5),
+#     c("rose", 6, 15, 12, 13, 12, 11, 8, 0, 4)
+#   )
+# )
+# save_game(
+#   list(
+#     c("emilie", 4, 0, 8, 0, 10, 0, 2, 12, 2),
+#     c("antoine", 6, 0, 0, 0, 0, 6, 6, 28, 6),
+#     c("rose", 3, 0, 0, 8, 0, 0, 4, 20, 10)
+#   )
+# )
+# save_game(
+#   list(
+#     c("rose", 0, 9, 7, 3, 18, 21, 6, 0, 7),
+#     c("emilie", 0, 0, 0, 5, 0, 20, 6, 17, 25),
+#     c("antoine", 10, 10, 0, 8, 6, 10, 21, 0, 18)
+#   )
+# )
+# save_game(
+#   list(
+#     c("antoine", 20, 0, 6, 0, 0, 15, 15, 15, 16),
+#     c("rose", 0, 28, 10, 8, 17, 18, 2, 0, 13)
+#   )
+# )
+# save_game(
+#   list(
+#     c("rose", 18, 10, 0, 0, 12, 19, 0, 10, 11),
+#     c("antoine", 6, 0, 0, 0, 15, 0, 28, 16, 8)
+#   )
+# )
+# save_game(
+#   list(
+#     c("rose", 0, 15, 9, 4, 12, 14, 5, 6, 13),
+#     c("antoine", 7, 3, 0, 0, 0, 13, 19, 16, 14)
+#   )
 # )
