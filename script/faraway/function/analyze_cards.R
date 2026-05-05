@@ -83,7 +83,7 @@ analyze_cards <- function(dir = "games_results",
   cols <- c("mean" = "#ea5153", "median" = "#8292ca", "min" = "#fdc543", "max" = "#5cb885")
   
   # Creation du graphique
-  plot(x, result$mean, type = "n", ylim = c(0, 25),
+  plot(x, result$mean, type = "n", ylim = c(0, 30),
        xaxt = "n", xlab = "Carte", ylab = "Score",
        main = titre)
   axis(1, at = x, labels = result$card, las = 2)
