@@ -7,8 +7,121 @@
 library(sf)
 library(asf)
 library(mapsf)
+library(readxl)
+library(janitor)
 
 
+# UK --------------------------------------------------------------------------
+# Fond geographique
+dz <- st_read("input/uk/geom/SG_DataZoneBdry_2022/SG_DataZone_Bdry_2022.shp") |>
+  st_make_valid() |>
+  asf_simplify(keep = 0.2)
+
+world <- st_read("input/monde_1M.gpkg") |>
+  st_transform(crs = "EPSG:27700")
+
+world <- world[world$ISO3_CODE %in% c("GBR", "IRL"), ]
+
+
+# Donnees
+data <- read_excel("input/uk/data/household-estimates-by-2022-data-zones.xlsx", 
+                   sheet = "2024", 
+                   skip = 3) |>
+  clean_names()
+
+
+# Cartographie
+c <- merge(dz, data, by.x = "dzcode", by.y = "data_zone_code", all.x = TRUE)
+
+
+# Map 1 - Second home percent
+mf_distr(c$second_homes_percent)
+
+mf_map(c, 
+       var = "second_homes_percent", 
+       type = "choro", 
+       breaks = c(0, 1, 2, 4, 6, max(c$second_homes_percent)), 
+       border = NA)
+
+mf_map(c, 
+       var = "second_homes", 
+       type = "prop", 
+       inches = 0.2, 
+       col = NA, 
+       border = "#000", 
+       leg_pos = "topright")
+
+mf_map(world, 
+       col = NA, 
+       add = TRUE)
+
+
+# Map 2 - Second home location quotient
+mean <- sum(c$second_homes, na.rm = TRUE) /
+  sum(c$total_number_of_dwellings, na.rm = TRUE)
+
+c$lq_second_homes <- (
+  c$second_homes / c$total_number_of_dwellings
+) / mean
+
+mf_distr(c$lq_second_homes)
+
+palette <- c("#57b998", 
+             "#8ccaae", 
+             "#c2dfc4", 
+             "#e3eed6", 
+             "#ffefb0", 
+             "#ffdb7d", 
+             "#fbbf6b", 
+             "#f28b52", 
+             "#eb5e4f", 
+             "#d72739")
+
+mf_map(
+  c,
+  var = "lq_second_homes",
+  type = "choro",
+  breaks = c(0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 10, Inf), 
+  pal = palette,
+  border = NA
+)
+
+mf_map(world, 
+       col = NA, 
+       add = TRUE)
+
+
+# # Map 3 - Potential test
+# library(potential)
+# 
+# # centroïdes des data zones
+# pts <- st_centroid(c)
+# 
+# # grille de calcul (1 km)
+# g <- create_grid(x = c, res = 1000)
+# 
+# # calcul du potentiel
+# pot <- mcpotential(
+#   x = pts,
+#   y = g,
+#   var = "second_homes",
+#   fun = "e",
+#   span = 5000,
+#   beta = 2,
+#   limit = 25000
+# )
+# 
+# g$pot <- pot
+# 
+# mf_map(g,
+#        var = "pot",
+#        type = "choro",
+#        leg_pos = "topleft",
+#        border = NA)
+
+
+
+# FR --------------------------------------------------------------------------
 # Fond geographique
 mar <- asf_mar(
   md = "iris_xxxx", 
@@ -67,10 +180,18 @@ x$v2_class <- class(x$ql_nb_ressec_D10)
 
 x$v1_v2_class <- paste0(x$v1_class, x$v2_class)
 
-c <- asf_fondata(f = fond_05, z = z[[1]], d = x, by = "IRISrD_CODE")
+c <- asf_fondata(f = fond_05, d = x, by = "IRISrD_CODE")
 
 mf_map(c, "v1_v2_class", type = "typo", pal = palette, border = NA, 
        val_order = c("jj", "lj", "mj", "hj",
                      "jl", "ll", "ml", "hl",
                      "jm", "lm", "mm", "hm",
                      "jh", "lh", "mh", "hh"))
+
+mf_map(c, 
+       var = "tot_ressec", 
+       type = "prop", 
+       inches = 0.2, 
+       col = NA, 
+       border = "#000", 
+       leg_pos = "topright")
