@@ -175,8 +175,8 @@ class <- function(x) {
       include.lowest = TRUE)
 }
 
-x$v1_class <- class(x$ql_nb_ressec_D9)
-x$v2_class <- class(x$ql_nb_ressec_D10)
+x$v1_class <- class(x$ql_nb_ressec_D8)
+x$v2_class <- class(x$ql_nb_ressec_D9)
 
 x$v1_v2_class <- paste0(x$v1_class, x$v2_class)
 
@@ -195,7 +195,3 @@ mf_map(c,
        col = NA, 
        border = "#000", 
        leg_pos = "topright")
-
-
-201.944 *100 /
-169.577
