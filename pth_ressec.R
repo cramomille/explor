@@ -195,3 +195,7 @@ mf_map(c,
        col = NA, 
        border = "#000", 
        leg_pos = "topright")
+
+
+201.944 *100 /
+169.577
