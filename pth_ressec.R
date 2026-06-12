@@ -91,35 +91,6 @@ mf_map(world,
        add = TRUE)
 
 
-# # Map 3 - Potential test
-# library(potential)
-# 
-# # centroïdes des data zones
-# pts <- st_centroid(c)
-# 
-# # grille de calcul (1 km)
-# g <- create_grid(x = c, res = 1000)
-# 
-# # calcul du potentiel
-# pot <- mcpotential(
-#   x = pts,
-#   y = g,
-#   var = "second_homes",
-#   fun = "e",
-#   span = 5000,
-#   beta = 2,
-#   limit = 25000
-# )
-# 
-# g$pot <- pot
-# 
-# mf_map(g,
-#        var = "pot",
-#        type = "choro",
-#        leg_pos = "topleft",
-#        border = NA)
-
-
 
 # FR --------------------------------------------------------------------------
 # Fond geographique
@@ -133,14 +104,13 @@ mar <- asf_mar(
 tabl <- mar$tabl
 geom <- mar$geom
 
-fond <- asf_fond(geom, tabl, by = "IRISF_CODE", maille = "IRISrD_CODE")
+fond <- asf_fond(geom, tabl, by = "IRISF_CODE", maille = "IRISrD_CODE", keep = c("TAAV2017", "CATEAAV2020"))
 fond <- asf_drom(fond)
 fond_05 <- asf_simplify(fond, keep = 0.1)
 fond_09 <- asf_simplify(fond, keep = 0.9)
 
 z <- asf_zoom(f = fond_09, 
-              places = c("5", "4", "Dijon", "Reims", "Rouen"),
-              nb_cols = 7)
+              places = "Lyon", r = 25000)
 
 palette <- c(
   "jj" = "#e9e5ec",
@@ -166,7 +136,10 @@ palette <- c(
 
 # Donnees sur les residences secondaires selon le decile de revenus du menage 
 # proprietaire
-x <- read.csv("input/ql_ressecdecile_irisr2.csv")
+v <- read.csv("input/ql_mendecile_irisr2.csv")
+w <- read.csv("input/ql_ressecdecile_irisr2.csv")
+
+x <- merge(v[, -1], w[-1], by = "IRISrD_CODE")
 
 class <- function(x) {
   cut(x,
@@ -175,12 +148,17 @@ class <- function(x) {
       include.lowest = TRUE)
 }
 
-x$v1_class <- class(x$ql_nb_ressec_D8)
-x$v2_class <- class(x$ql_nb_ressec_D9)
+x$v1_class <- class(x$ql_nb_men_D10)
+x$v2_class <- class(x$ql_nb_ressec_D10)
 
 x$v1_v2_class <- paste0(x$v1_class, x$v2_class)
 
-c <- asf_fondata(f = fond_05, d = x, by = "IRISrD_CODE")
+c <- asf_fondata(
+  f = fond_05,
+  # z = z[[1]],
+  d = x,
+  by = "IRISrD_CODE")
+
 
 mf_map(c, "v1_v2_class", type = "typo", pal = palette, border = NA, 
        val_order = c("jj", "lj", "mj", "hj",
@@ -188,10 +166,23 @@ mf_map(c, "v1_v2_class", type = "typo", pal = palette, border = NA,
                      "jm", "lm", "mm", "hm",
                      "jh", "lh", "mh", "hh"))
 
-mf_map(c, 
-       var = "tot_ressec", 
-       type = "prop", 
-       inches = 0.2, 
-       col = NA, 
-       border = "#000", 
+mf_map(c,
+       var = "tot_ressec",
+       type = "prop",
+       inches = 0.2,
+       col = NA,
+       border = "#000",
        leg_pos = "topright")
+
+
+
+mf_map(c, var = "ql_nb_ressec_D9", type = "choro", breaks = "q6", border = NA)
+mf_map(c, var = "ql_nb_ressec_D10", type = "choro", breaks = "q6", border = NA)
+
+
+
+
+c <- asf_fondata(z = z[[1]], d = x, by = "COMr2_CODE")
+
+mf_map(c, var = "ql_nb_ressec_D8", type = "choro", breaks = "q6", border = NA)
+
