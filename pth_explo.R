@@ -25,14 +25,12 @@ dz <- st_read("input/pth/uk/geom/SG_DataZoneBdry_2022/SG_DataZone_Bdry_2022.shp"
 
 names(dz)[1] <- "data_zone_code"
   
-# ca <- asf_fond(dz[, 1], data[, c(1, 3)], 
-#                by.x = "dzcode", by.y = "data_zone_code",
-#                maille = "council_area_code")
+ca <- asf_fond(dz[, 1], data[, c(1, 3)],
+               by = "data_zone_code",
+               maille = "council_area_code")
 
 z <- asf_zoom(dz, coords = c(-4.2583, 55.8616,
                              -3.1882, 55.9532))
-
-
 
 # Donnees
 data <- read_excel("input/pth/uk/data/household-estimates-by-2022-data-zones.xlsx", 
@@ -40,12 +38,12 @@ data <- read_excel("input/pth/uk/data/household-estimates-by-2022-data-zones.xls
                    skip = 3) |>
         clean_names()
 
-# data <- asf_data(data, 
-#                  maille = "council_area_code", 
-#                  vars = c(5:12), funs = "sum", 
-#                  keep = "council_area_name")
-# 
-# c <- merge(ca, data, by = "council_area_code", all.x = TRUE)
+data <- asf_data(data,
+                 maille = "council_area_code",
+                 vars = c(5:12), funs = "sum",
+                 keep = "council_area_name")
+
+c <- merge(ca, data, by = "council_area_code", all.x = TRUE)
 
 
 
@@ -64,6 +62,11 @@ mf_map(c,
        type = "choro", 
        breaks = c(0, 1, 2, 4, 6, max(c$second_homes_pct)), 
        border = NA)
+
+border <- asf_borders(c, by = "council_area_code", keep = 0.001)
+
+mf_map(c, border = NA)
+mf_map(border, col = "#fff", add = TRUE)
 
 mf_map(c, 
        var = "second_homes", 
@@ -88,22 +91,20 @@ c$lq_second_homes <- (
 
 mf_distr(c$lq_second_homes)
 
-palette <- c("#57b998", 
-             "#8ccaae", 
-             "#c2dfc4", 
-             "#e3eed6", 
-             "#ffefb0", 
-             "#ffdb7d", 
-             "#fbbf6b", 
-             "#f28b52", 
-             "#eb5e4f", 
-             "#d72739")
+palette <- c("#aeb4ac", 
+             "#c9d1c6", 
+             "#e4e7e0", 
+             "#ffdd94", 
+             "#f7ae83", 
+             "#ef776e", 
+             "#e9425c", 
+             "#95254c")
 
 mf_map(
   c,
   var = "lq_second_homes",
   type = "choro",
-  breaks = c(0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 10, Inf), 
+  breaks = c(0, 0.3, 0.6, 1, 1.4, 1.7, 2, 10, Inf), 
   pal = palette,
   border = NA
 )
@@ -307,4 +308,15 @@ mf_map(c, "v1_v2_class", type = "typo", pal = palette, border = NA,
 
 
 
+palette <- c("#aeb4ac", 
+             "#c9d1c6", 
+             "#e4e7e0",
+             "#ffdd94", 
+             "#f7ae83", 
+             "#ef776e", 
+             "#e9425c")
 
+
+mf_map(c, var = "ql_c100", type = "choro",
+       breaks = c(0, 0.5, 0.75, 1, 1.25, 1.5, 2, Inf), 
+       pal = palette, border = NA)
