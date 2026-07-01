@@ -104,8 +104,8 @@ mf_map(x,
 
 y <- fondata
 
-y$pct_cs5 <- y$C20_POP15P_CS5 / y$C20_POP15P * 100
-y$pct_cs3 <- y$C20_POP15P_CS3 / y$C20_POP15P * 100
+y$pct_var1 <- y$C20_POP15P_CS6 / y$C20_POP15P * 100
+y$pct_var2 <- y$C20_POP15P_CS3 / y$C20_POP15P * 100
 
 class3 <- function(x) {
   cuts <- quantile(x, probs = c(1/3, 2/3), na.rm = TRUE)
@@ -115,10 +115,10 @@ class3 <- function(x) {
       include.lowest = TRUE)
 }
 
-y$cs5_class <- class3(y$pct_cs5)
-y$cs3_class <- class3(y$pct_cs3)
+y$var1_class <- class3(y$pct_var1)
+y$var2_class <- class3(y$pct_var2)
 
-y$class <- paste0(y$cs5_class, y$cs3_class)
+y$class <- paste0(y$var1_class, y$var2_class)
 
 palette <- c("ll" = "#e3e3e3", "lm" = "#8ccaae", "lh" = "#00a183",
              "ml" = "#f28d65", "mm" = "#a08a6e", "mh" = "#00725c",
